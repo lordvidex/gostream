@@ -1,0 +1,112 @@
+syntax = "proto3";
+
+package com.lordvidex.gostream.v1;
+
+service WatchersService {
+  rpc Watch(WatchRequest) returns (stream WatchResponse) {}
+}
+
+service PetService {
+  rpc CreatePet(CreatePetRequest) returns (CreatePetResponse) {}
+  rpc UpdatePet(UpdatePetRequest) returns (UpdatePetResponse) {}
+  rpc ListPets(ListPetsRequest) returns (ListPetsResponse) {}
+}
+
+service UserService {
+  rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {}
+  rpc UpdateUser(UpdateUserRequest) returns (UpdateUserRequest) {}
+  rpc ListUsers(ListUsersRequest) returns (ListUsersResponse) {}
+}
+
+message CreatePetRequest {
+  Pet pet = 1;
+}
+
+message CreatePetResponse {
+  uint64 id = 1;
+}
+
+message UpdatePetRequest {
+  uint64 pet_id = 1;
+  Pet  new_data = 2;
+}
+
+message UpdatePetResponse {}
+
+message ListPetsRequest {
+  // TODO: add filters
+}
+
+message ListPetsResponse {
+  repeated Pet pets = 1;
+  // TODO: add page metadata
+}
+
+message CreateUserRequest {
+  User user = 1;
+}
+
+message CreateUserResponse {
+  uint64 id = 1;
+}
+
+message UpdateUserRequest {
+  User user = 1;
+}
+
+message UpdateUserResponse {}
+
+message ListUsersRequest {}
+message ListUsersResponse {
+  repeated User users = 1;
+}
+
+message WatchRequest {
+  repeated Entity entity = 1; // UNSPECIFIED will send updates of any entity
+}
+
+message WatchResponse {
+  EventKind kind = 1;
+  oneof data {
+    WatchSnapshot snapshot = 2;
+    WatchData update       = 3;
+  }
+
+  message WatchSnapshot {
+    repeated WatchData snapshot = 1;
+  }
+
+  message WatchData {
+    Entity entity = 1;
+    oneof data {
+      Pet pet   = 2;
+      User user = 3;
+    }
+  }
+}
+
+enum EventKind {
+  EVENT_KIND_UNSPECIFIED = 0;
+  EVENT_KIND_SNAPSHOT    = 1; // full data
+  EVENT_KIND_UPDATE      = 2; // only partial updated data
+}
+
+enum Entity {
+  ENTITY_UNSPECIFIED = 0;
+  ENTITY_PET         = 1;
+  ENTITY_USER        = 2;
+}
+
+message Pet {
+  uint64 id   = 1;
+  string kind = 2; // cats, dogs, rabbits
+  string name = 3;
+  uint32 age  = 4;
+}
+
+message User {
+  uint64 id          = 1;
+  string name        = 2;
+  uint32 age         = 3;
+  string nationality = 4;
+}
