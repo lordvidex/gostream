@@ -7,17 +7,24 @@ import (
 	"log"
 	"net"
 
+	altsrc "github.com/urfave/cli-altsrc/v3"
 	"github.com/urfave/cli/v3"
 	"google.golang.org/grpc"
+
+	pkgcli "github.com/lordvidex/gostream/pkg/cli"
 
 	"github.com/lordvidex/gostream/internal/app/gostream"
 	gostreamv1 "github.com/lordvidex/gostream/pkg/api/gostream/v1"
 )
 
 var config struct {
-	Port    int64
-	LogFile string
-	DryRun  bool
+	Port     int64
+	LogFile  string
+	DryRun   bool
+	DSN      string
+	RedisURL string
+	// CfgFilePath is the path to config.toml file if provided
+	CfgFilePath string
 }
 
 var Cmd = &cli.Command{
@@ -40,6 +47,26 @@ var Cmd = &cli.Command{
 					DefaultText: "stdout",
 					Destination: &config.LogFile,
 				},
+				&cli.StringFlag{
+					Name:     "dsn",
+					Usage:    "database full URL",
+					Required: true,
+					Aliases:  []string{"d"},
+					Sources: pkgcli.MergeChains(
+						cli.NewValueSourceChain(cli.EnvVar("DSN")),
+						altsrc.TOML("server.dsn", config.CfgFilePath, "config.toml"), // not working
+					),
+					Destination: &config.DSN,
+				},
+				&cli.StringFlag{
+					Name:    "redis-url",
+					Aliases: []string{"r"},
+					Sources: pkgcli.MergeChains(
+						cli.NewValueSourceChain(cli.EnvVar("REDIS_URL")),
+						altsrc.TOML("server.redis_url", config.CfgFilePath, "config.toml"),
+					),
+					Destination: &config.RedisURL,
+				},
 				&cli.BoolFlag{
 					Name:  "dry-run",
 					Usage: "print configs and exit",
@@ -54,6 +81,11 @@ var Cmd = &cli.Command{
 				},
 			},
 			Action: serveFn,
+			Before: func(ctx context.Context, cmd *cli.Command) (context.Context, error) {
+				fmt.Println("before called, cfgfilepath saved")
+				config.CfgFilePath = cmd.String("config")
+				return ctx, nil
+			},
 		},
 	},
 }

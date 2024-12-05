@@ -1,3 +1,5 @@
 [client]
 servers = ["localhost:50051", "localhost:50052", "localhost:50053"]
 [server]
+redis_url="localhost:6379"
+dsn="postgres://postgres:postgres@localhost:5432/gostream" # TODO: change values, this is based on values from env.example
