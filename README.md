@@ -14,6 +14,13 @@ gostream has two main components:
 - CLI for retrieving server status and extra information
 
 ## Creating servers and clients
+### Install CLI tool
+
+```bash
+go install github.com/lordvidex/gostream/cmd/gostream@latest
+```
+
+### 
 ```bash
 # Create a new server instance
 gostream server serve --port <port> -c config.toml

@@ -4,6 +4,7 @@ go 1.23
 
 require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.22.0
+	github.com/urfave/cli/v3 v3.0.0-beta1
 	google.golang.org/grpc v1.67.0
 	google.golang.org/protobuf v1.34.2
 )

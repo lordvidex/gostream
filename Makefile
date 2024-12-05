@@ -15,9 +15,16 @@ bin:
 generate: bin
 	$(BUF_BIN) generate
 
+build:
+	go build -o $(LOCAL_BIN)/gostream ./cmd/gostream
+
 .PHONY: \
 	# bin \ # uncomment to regenerate bin file (in RU, proxy is needed)
-	generate 
+	generate \
+	build
+
+
+
 
 
 
