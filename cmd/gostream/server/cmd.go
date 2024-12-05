@@ -14,6 +14,7 @@ import (
 	pkgcli "github.com/lordvidex/gostream/pkg/cli"
 
 	"github.com/lordvidex/gostream/internal/app/gostream"
+	"github.com/lordvidex/gostream/internal/db/pg"
 	gostreamv1 "github.com/lordvidex/gostream/pkg/api/gostream/v1"
 )
 
@@ -24,7 +25,8 @@ var config struct {
 	DSN      string
 	RedisURL string
 	// CfgFilePath is the path to config.toml file if provided
-	CfgFilePath string
+	CfgFilePath  string
+	RunMigration bool
 }
 
 var Cmd = &cli.Command{
@@ -46,6 +48,12 @@ var Cmd = &cli.Command{
 					Usage:       "log file path",
 					DefaultText: "stdout",
 					Destination: &config.LogFile,
+				},
+				&cli.BoolFlag{
+					Name:        "migrations",
+					Aliases:     []string{"m"},
+					Usage:       "run migrations Up before starting application",
+					Destination: &config.RunMigration,
 				},
 				&cli.StringFlag{
 					Name:     "dsn",
@@ -92,7 +100,12 @@ var Cmd = &cli.Command{
 
 // Serve ...
 func serveFn(ctx context.Context, _ *cli.Command) error {
-	srv := gostream.NewService()
+	repo, err := pg.NewRepository(ctx, config.DSN, pg.WithRunMigrations(config.RunMigration))
+	if err != nil {
+		return err
+	}
+
+	srv := gostream.NewService(repo, nil, nil)
 	s := grpc.NewServer()
 	gostreamv1.RegisterPetServiceServer(s, srv)
 	gostreamv1.RegisterUserServiceServer(s, srv)
