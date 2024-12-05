@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package com.lordvidex.gostream.v1;
 
+option go_package = "github.com/lordvidex/gostream/pkg/api/gostream/v1;gostreamv1";
+
 service WatchersService {
   rpc Watch(WatchRequest) returns (stream WatchResponse) {}
 }

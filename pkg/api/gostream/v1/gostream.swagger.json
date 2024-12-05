@@ -1,0 +1,488 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "v1/gostream.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "WatchersService"
+    },
+    {
+      "name": "PetService"
+    },
+    {
+      "name": "UserService"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/com.lordvidex.gostream.v1.PetService/CreatePet": {
+      "post": {
+        "operationId": "PetService_CreatePet",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1CreatePetResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1CreatePetRequest"
+            }
+          }
+        ],
+        "tags": [
+          "PetService"
+        ]
+      }
+    },
+    "/com.lordvidex.gostream.v1.PetService/ListPets": {
+      "post": {
+        "operationId": "PetService_ListPets",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListPetsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1ListPetsRequest"
+            }
+          }
+        ],
+        "tags": [
+          "PetService"
+        ]
+      }
+    },
+    "/com.lordvidex.gostream.v1.PetService/UpdatePet": {
+      "post": {
+        "operationId": "PetService_UpdatePet",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1UpdatePetResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1UpdatePetRequest"
+            }
+          }
+        ],
+        "tags": [
+          "PetService"
+        ]
+      }
+    },
+    "/com.lordvidex.gostream.v1.UserService/CreateUser": {
+      "post": {
+        "operationId": "UserService_CreateUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1CreateUserResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1CreateUserRequest"
+            }
+          }
+        ],
+        "tags": [
+          "UserService"
+        ]
+      }
+    },
+    "/com.lordvidex.gostream.v1.UserService/ListUsers": {
+      "post": {
+        "operationId": "UserService_ListUsers",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListUsersResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1ListUsersRequest"
+            }
+          }
+        ],
+        "tags": [
+          "UserService"
+        ]
+      }
+    },
+    "/com.lordvidex.gostream.v1.UserService/UpdateUser": {
+      "post": {
+        "operationId": "UserService_UpdateUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1UpdateUserRequest"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1UpdateUserRequest"
+            }
+          }
+        ],
+        "tags": [
+          "UserService"
+        ]
+      }
+    },
+    "/com.lordvidex.gostream.v1.WatchersService/Watch": {
+      "post": {
+        "operationId": "WatchersService_Watch",
+        "responses": {
+          "200": {
+            "description": "A successful response.(streaming responses)",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "result": {
+                  "$ref": "#/definitions/v1WatchResponse"
+                },
+                "error": {
+                  "$ref": "#/definitions/rpcStatus"
+                }
+              },
+              "title": "Stream result of v1WatchResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1WatchRequest"
+            }
+          }
+        ],
+        "tags": [
+          "WatchersService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "WatchResponseWatchData": {
+      "type": "object",
+      "properties": {
+        "entity": {
+          "$ref": "#/definitions/v1Entity"
+        },
+        "pet": {
+          "$ref": "#/definitions/v1Pet"
+        },
+        "user": {
+          "$ref": "#/definitions/v1User"
+        }
+      }
+    },
+    "WatchResponseWatchSnapshot": {
+      "type": "object",
+      "properties": {
+        "snapshot": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/WatchResponseWatchData"
+          }
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "v1CreatePetRequest": {
+      "type": "object",
+      "properties": {
+        "pet": {
+          "$ref": "#/definitions/v1Pet"
+        }
+      }
+    },
+    "v1CreatePetResponse": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "v1CreateUserRequest": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/definitions/v1User"
+        }
+      }
+    },
+    "v1CreateUserResponse": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "v1Entity": {
+      "type": "string",
+      "enum": [
+        "ENTITY_UNSPECIFIED",
+        "ENTITY_PET",
+        "ENTITY_USER"
+      ],
+      "default": "ENTITY_UNSPECIFIED"
+    },
+    "v1EventKind": {
+      "type": "string",
+      "enum": [
+        "EVENT_KIND_UNSPECIFIED",
+        "EVENT_KIND_SNAPSHOT",
+        "EVENT_KIND_UPDATE"
+      ],
+      "default": "EVENT_KIND_UNSPECIFIED",
+      "title": "- EVENT_KIND_SNAPSHOT: full data\n - EVENT_KIND_UPDATE: only partial updated data"
+    },
+    "v1ListPetsRequest": {
+      "type": "object",
+      "title": "TODO: add filters"
+    },
+    "v1ListPetsResponse": {
+      "type": "object",
+      "properties": {
+        "pets": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Pet"
+          },
+          "title": "TODO: add page metadata"
+        }
+      }
+    },
+    "v1ListUsersRequest": {
+      "type": "object"
+    },
+    "v1ListUsersResponse": {
+      "type": "object",
+      "properties": {
+        "users": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1User"
+          }
+        }
+      }
+    },
+    "v1Pet": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "kind": {
+          "type": "string",
+          "title": "cats, dogs, rabbits"
+        },
+        "name": {
+          "type": "string"
+        },
+        "age": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    },
+    "v1UpdatePetRequest": {
+      "type": "object",
+      "properties": {
+        "petId": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "newData": {
+          "$ref": "#/definitions/v1Pet"
+        }
+      }
+    },
+    "v1UpdatePetResponse": {
+      "type": "object"
+    },
+    "v1UpdateUserRequest": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/definitions/v1User"
+        }
+      }
+    },
+    "v1User": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "name": {
+          "type": "string"
+        },
+        "age": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "nationality": {
+          "type": "string"
+        }
+      }
+    },
+    "v1WatchRequest": {
+      "type": "object",
+      "properties": {
+        "entity": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1Entity"
+          },
+          "title": "UNSPECIFIED will send updates of any entity"
+        }
+      }
+    },
+    "v1WatchResponse": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "$ref": "#/definitions/v1EventKind"
+        },
+        "snapshot": {
+          "$ref": "#/definitions/WatchResponseWatchSnapshot"
+        },
+        "update": {
+          "$ref": "#/definitions/WatchResponseWatchData"
+        }
+      }
+    }
+  }
+}
