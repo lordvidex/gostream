@@ -17,4 +17,4 @@ services:
       - "6379:6379"
 
 volumes:
-    - db
+  db:
