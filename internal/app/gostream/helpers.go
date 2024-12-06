@@ -22,6 +22,21 @@ func (i *Implementation) publishPet(ctx context.Context, p *gostreamv1.Pet) erro
 	return i.publishData(ctx, data)
 }
 
+func (i *Implementation) publishUser(ctx context.Context, p *gostreamv1.User) error {
+	data := &gostreamv1.WatchResponse{
+		Kind: gostreamv1.EventKind_EVENT_KIND_UPDATE,
+		Data: &gostreamv1.WatchResponse_Update{
+			Update: &gostreamv1.WatchResponse_WatchData{
+				Entity: gostreamv1.Entity_ENTITY_USER,
+				Data: &gostreamv1.WatchResponse_WatchData_User{
+					User: p,
+				},
+			},
+		},
+	}
+	return i.publishData(ctx, data)
+}
+
 func (i *Implementation) publishData(ctx context.Context, d *gostreamv1.WatchResponse) error {
 	g, ctx := errgroup.WithContext(ctx)
 
