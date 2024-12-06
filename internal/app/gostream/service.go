@@ -25,6 +25,8 @@ type PetRepository interface {
 // UserRepository ...
 type UserRepository interface {
 	CreateUser(context.Context, *gostreamv1.User) (uint64, error)
+	ListUsers(context.Context) ([] *gostreamv1.User, error)
+	UpdateUser(context.Context, *gostreamv1.User) (error)
 }
 
 // Implementation ...
