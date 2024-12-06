@@ -1,17 +1,32 @@
 syntax = "proto3";
 
 package com.lordvidex.gostream.v1;
-
 option go_package = "github.com/lordvidex/gostream/pkg/api/gostream/v1;gostreamv1";
+
+import "google/api/annotations.proto";
 
 service WatchersService {
   rpc Watch(WatchRequest) returns (stream WatchResponse) {}
 }
 
 service PetService {
-  rpc CreatePet(CreatePetRequest) returns (CreatePetResponse) {}
-  rpc UpdatePet(UpdatePetRequest) returns (UpdatePetResponse) {}
-  rpc ListPets(ListPetsRequest) returns (ListPetsResponse) {}
+  rpc CreatePet(CreatePetRequest) returns (CreatePetResponse) {
+    option (google.api.http) = {
+      post: "/pet"
+      body: "*"
+    };
+  }
+  rpc UpdatePet(UpdatePetRequest) returns (UpdatePetResponse) {
+    option (google.api.http) = {
+      put: "/pet/{pet_id}"
+      body: "*"
+    };
+  }
+  rpc ListPets(ListPetsRequest) returns (ListPetsResponse) {
+    option(google.api.http) = {
+      get: "/pet"
+    };
+  }
 }
 
 service UserService {
