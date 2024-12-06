@@ -22,102 +22,6 @@
     "application/json"
   ],
   "paths": {
-    "/com.lordvidex.gostream.v1.PetService/CreatePet": {
-      "post": {
-        "operationId": "PetService_CreatePet",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1CreatePetResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/v1CreatePetRequest"
-            }
-          }
-        ],
-        "tags": [
-          "PetService"
-        ]
-      }
-    },
-    "/com.lordvidex.gostream.v1.PetService/ListPets": {
-      "post": {
-        "operationId": "PetService_ListPets",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1ListPetsResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/v1ListPetsRequest"
-            }
-          }
-        ],
-        "tags": [
-          "PetService"
-        ]
-      }
-    },
-    "/com.lordvidex.gostream.v1.PetService/UpdatePet": {
-      "post": {
-        "operationId": "PetService_UpdatePet",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1UpdatePetResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/v1UpdatePetRequest"
-            }
-          }
-        ],
-        "tags": [
-          "PetService"
-        ]
-      }
-    },
     "/com.lordvidex.gostream.v1.UserService/CreateUser": {
       "post": {
         "operationId": "UserService_CreateUser",
@@ -254,6 +158,102 @@
           "WatchersService"
         ]
       }
+    },
+    "/pet": {
+      "get": {
+        "operationId": "PetService_ListPets",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListPetsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "PetService"
+        ]
+      },
+      "post": {
+        "operationId": "PetService_CreatePet",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1CreatePetResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1CreatePetRequest"
+            }
+          }
+        ],
+        "tags": [
+          "PetService"
+        ]
+      }
+    },
+    "/pet/{petId}": {
+      "put": {
+        "operationId": "PetService_UpdatePet",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1UpdatePetResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "petId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "newData": {
+                  "$ref": "#/definitions/v1Pet"
+                }
+              }
+            }
+          }
+        ],
+        "tags": [
+          "PetService"
+        ]
+      }
     }
   },
   "definitions": {
@@ -364,10 +364,6 @@
       "default": "EVENT_KIND_UNSPECIFIED",
       "title": "- EVENT_KIND_SNAPSHOT: full data\n - EVENT_KIND_UPDATE: only partial updated data"
     },
-    "v1ListPetsRequest": {
-      "type": "object",
-      "title": "TODO: add filters"
-    },
     "v1ListPetsResponse": {
       "type": "object",
       "properties": {
@@ -413,18 +409,6 @@
         "age": {
           "type": "integer",
           "format": "int64"
-        }
-      }
-    },
-    "v1UpdatePetRequest": {
-      "type": "object",
-      "properties": {
-        "petId": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "newData": {
-          "$ref": "#/definitions/v1Pet"
         }
       }
     },

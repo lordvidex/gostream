@@ -66,16 +66,33 @@ fast-generate: .protoc
 	# $(BUF_BIN) mod update # (not working in RU)
 	# $(BUF_BIN) generate
 
+OUT_DIR := ./pkg/api/gostream
+PROTO_FILES := $(shell find api -name '*.proto')
+
 .protoc:
+	protoc \
+		--proto_path=api \
+		--proto_path=vendor-proto \
+		--plugin=protoc-gen-go=$(LOCAL_BIN)/protoc-gen-go \
+		--go_out=paths=source_relative:$(OUT_DIR) \
+		--plugin=protoc-gen-go-grpc=$(LOCAL_BIN)/protoc-gen-go-grpc \
+		--go-grpc_out=paths=source_relative:$(OUT_DIR) \
+		--plugin=protoc-gen-grpc-gateway=$(LOCAL_BIN)/protoc-gen-grpc-gateway \
+		--grpc-gateway_out=logtostderr=true,paths=source_relative:$(OUT_DIR) \
+		--plugin=protoc-gen-openapiv2=$(LOCAL_BIN)/protoc-gen-openapiv2 \
+		--openapiv2_out=generate_unbound_methods=true:$(OUT_DIR) \
+		$(PROTO_FILES)
+		
 
 build:
 	go build -o $(LOCAL_BIN)/gostream ./cmd/gostream
 
 .PHONY: \
-	# bin \ # uncomment to regenerate bin file (in RU, proxy is needed)
+	bin \ # uncomment to regenerate bin file (in RU, proxy is needed)
 	generate \
 	fast-generate \
 	vendor-proto \
+	.protoc \
 	build
 
 

@@ -12,7 +12,8 @@ import (
 )
 
 var config struct {
-	Port     int64
+	GRPCPort int64
+	HTTPPort int64
 	LogFile  string
 	DryRun   bool
 	DSN      string
@@ -29,16 +30,23 @@ var Cmd = &cli.Command{
 			Name: "serve",
 			Flags: []cli.Flag{
 				&cli.IntFlag{
-					Name:        "port",
-					Aliases:     []string{"p"},
+					Name:        "grpc",
+					Usage:       "grpc port",
 					Value:       50051,
 					OnlyOnce:    true,
-					Destination: &config.Port,
+					Destination: &config.GRPCPort,
+				},
+				&cli.IntFlag{
+					Name:        "http",
+					Usage:       "http port",
+					Value:       8080,
+					OnlyOnce:    true,
+					Destination: &config.HTTPPort,
 				},
 				&cli.StringFlag{
-					Name:        "log-file",
+					Name:        "log",
 					Aliases:     []string{"l"},
-					Usage:       "log file path",
+					Usage:       "path to log file",
 					DefaultText: "stdout",
 					Destination: &config.LogFile,
 				},
@@ -60,8 +68,9 @@ var Cmd = &cli.Command{
 					Destination: &config.DSN,
 				},
 				&cli.StringFlag{
-					Name:    "redis-url",
+					Name:    "redis",
 					Aliases: []string{"r"},
+					Usage:   "redis full URL",
 					Sources: pkgcli.MergeChains(
 						cli.NewValueSourceChain(cli.EnvVar("REDIS_URL")),
 						altsrc.TOML("server.redis_url", config.CfgFilePath, "config.toml"),
