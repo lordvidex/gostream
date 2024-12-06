@@ -24,7 +24,7 @@ type PetRepository interface {
 
 // UserRepository ...
 type UserRepository interface {
-	// TODO: complete
+	CreateUser(context.Context, *gostreamv1.User) (uint64, error)
 }
 
 // Implementation ...
