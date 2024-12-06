@@ -11,7 +11,7 @@ import (
 	"github.com/pressly/goose/v3"
 )
 
-// Repository
+// Repository ...
 type Repository struct {
 	pool *pgxpool.Pool
 }

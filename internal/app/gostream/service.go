@@ -6,11 +6,6 @@ import (
 	gostreamv1 "github.com/lordvidex/gostream/pkg/api/gostream/v1"
 )
 
-// ClientPublisher ...
-type ClientPublisher interface {
-	PublishToClients(context.Context, *gostreamv1.WatchResponse) error
-}
-
 // ServerPublisher ...
 type ServerPublisher interface {
 	PublishToServers(context.Context, *gostreamv1.WatchResponse) error
@@ -42,11 +37,10 @@ type Implementation struct {
 	petRepo  PetRepository
 	userRepo UserRepository
 	// pubs
-	clientPub ClientPublisher
 	serverPub ServerPublisher
 }
 
 // NewService ...
-func NewService(r Repository, cp ClientPublisher, sp ServerPublisher) *Implementation {
-	return &Implementation{petRepo: r, userRepo: r, clientPub: cp, serverPub: sp}
+func NewService(r Repository, sp ServerPublisher) *Implementation {
+	return &Implementation{petRepo: r, userRepo: r, serverPub: sp}
 }
