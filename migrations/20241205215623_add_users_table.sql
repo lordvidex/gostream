@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS stream_users (
 -- +goose StatementEnd
 -- +goose StatementBegin
 ALTER TABLE stream_users 
-ADD CONSTRAINT IF NOT EXISTS nationality_iso2_chk CHECK(char_length(nationality) = 2);
+ADD CONSTRAINT nationality_iso2_chk CHECK(char_length(nationality) = 2);
 -- +goose StatementEnd
 
 -- +goose Down

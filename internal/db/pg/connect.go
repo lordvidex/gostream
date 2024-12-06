@@ -17,8 +17,8 @@ type Repository struct {
 }
 
 // NewRepository ...
-func NewRepository(ctx context.Context, connString string, opts ...Options) (*Repository, error) {
-	var opt repositoryOptions
+func NewRepository(ctx context.Context, connString string, opts ...ApplyOption) (*Repository, error) {
+	var opt options
 	for _, o := range opts {
 		o(&opt)
 	}
@@ -34,6 +34,7 @@ func NewRepository(ctx context.Context, connString string, opts ...Options) (*Re
 
 	if opt.RunMigrations {
 		db := stdlib.OpenDBFromPool(pool)
+		defer db.Close()
 		if err = pgMigrate(db); err != nil {
 			return nil, err
 		}
@@ -42,16 +43,16 @@ func NewRepository(ctx context.Context, connString string, opts ...Options) (*Re
 	return &Repository{pool: pool}, nil
 }
 
-type repositoryOptions struct {
+type options struct {
 	RunMigrations bool
 }
 
-// Options ...
-type Options func(*repositoryOptions)
+// ApplyOption ...
+type ApplyOption func(*options)
 
 // WithRunMigrations ...
-func WithRunMigrations(value bool) Options {
-	return func(x *repositoryOptions) {
+func WithRunMigrations(value bool) ApplyOption {
+	return func(x *options) {
 		x.RunMigrations = value
 	}
 }
