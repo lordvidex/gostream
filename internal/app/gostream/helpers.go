@@ -4,7 +4,6 @@ import (
 	"context"
 
 	gostreamv1 "github.com/lordvidex/gostream/pkg/api/gostream/v1"
-	"golang.org/x/sync/errgroup"
 )
 
 func (i *Implementation) publishPet(ctx context.Context, p *gostreamv1.Pet) error {
@@ -23,18 +22,5 @@ func (i *Implementation) publishPet(ctx context.Context, p *gostreamv1.Pet) erro
 }
 
 func (i *Implementation) publishData(ctx context.Context, d *gostreamv1.WatchResponse) error {
-	g, ctx := errgroup.WithContext(ctx)
-
-	g.Go(func() error {
-		return i.serverPub.PublishToServers(ctx, d)
-	})
-	g.Go(func() error {
-		return i.clientPub.PublishToClients(ctx, d)
-	})
-
-	if err := g.Wait(); err != nil {
-		return err
-	}
-
-	return nil
+	return i.serverPub.PublishToServers(ctx, d)
 }

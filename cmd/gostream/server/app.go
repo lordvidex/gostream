@@ -8,7 +8,7 @@ import (
 	"net/http"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"github.com/urfave/cli/v3"
+	"github.com/lordvidex/gostream/internal/config"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -20,27 +20,42 @@ import (
 	gostreamv1 "github.com/lordvidex/gostream/pkg/api/gostream/v1"
 )
 
+// App ...
+type App struct {
+	cfg config.Server
+}
+
+// New ...
+func New(cfg config.Server) *App {
+	return &App{cfg: cfg}
+}
+
 // Serve ...
-func serveFn(ctx context.Context, _ *cli.Command) error {
-	repo, err := pg.NewRepository(ctx, config.DSN, pg.WithRunMigrations(config.RunMigration))
+func (a *App) Serve(ctx context.Context) error {
+	if a.cfg.DryRun {
+		log.Println("dry run mode enabled")
+		fmt.Printf("%+v\n", a.cfg)
+		return nil
+	}
+	repo, err := pg.NewRepository(ctx, a.cfg.DSN, pg.WithRunMigrations(a.cfg.RunMigrations))
 	if err != nil {
 		return err
 	}
 
 	clientPub := &watchers.Client{}
-	serverPub, err := watchers.NewServer(ctx, config.RedisURL, clientPub)
+	serverPub, err := watchers.NewServer(ctx, a.cfg.RedisURL, clientPub)
 	if err != nil {
 		return fmt.Errorf("error creating serverPubSub: %w", err)
 	}
 
-	srv := gostream.NewService(repo, clientPub, serverPub)
+	srv := gostream.NewService(repo, serverPub)
 	s := grpc.NewServer()
 	gostreamv1.RegisterPetServiceServer(s, srv)
 	gostreamv1.RegisterUserServiceServer(s, srv)
 	gostreamv1.RegisterWatchersServiceServer(s, srv)
 	reflection.Register(s)
 
-	addr := fmt.Sprintf(":%d", config.GRPCPort)
+	addr := fmt.Sprintf(":%d", a.cfg.GRPCPort)
 	log.Println("server listening on", addr)
 
 	lis, err := net.Listen("tcp", addr)
@@ -56,7 +71,7 @@ func serveFn(ctx context.Context, _ *cli.Command) error {
 		return nil
 	})
 	g.Go(func() error {
-		if err := serveHTTPGateway(ctx, addr); err != nil {
+		if err := serveHTTPGateway(ctx, a.cfg, addr); err != nil {
 			return fmt.Errorf("server HTTP gateway stopped with err: %w", err)
 		}
 		return nil
@@ -65,7 +80,7 @@ func serveFn(ctx context.Context, _ *cli.Command) error {
 	return g.Wait()
 }
 
-func serveHTTPGateway(ctx context.Context, endpoint string) error {
+func serveHTTPGateway(ctx context.Context, cfg config.Server, endpoint string) error {
 	mux := runtime.NewServeMux()
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 
@@ -73,5 +88,5 @@ func serveHTTPGateway(ctx context.Context, endpoint string) error {
 		return err
 	}
 
-	return http.ListenAndServe(fmt.Sprintf(":%d", config.HTTPPort), mux)
+	return http.ListenAndServe(fmt.Sprintf(":%d", cfg.HTTPPort), mux)
 }
