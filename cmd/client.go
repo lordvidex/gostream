@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/lordvidex/gostream/cmd/gostream/client"
+	"github.com/lordvidex/gostream/internal/cmd/client"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )

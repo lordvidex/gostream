@@ -4,7 +4,7 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"github.com/lordvidex/gostream/cmd/gostream/server"
+	"github.com/lordvidex/gostream/internal/cmd/server"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
