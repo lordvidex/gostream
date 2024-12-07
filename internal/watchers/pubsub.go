@@ -16,21 +16,21 @@ type ClientPublisher interface {
 	PublishToClients(context.Context, *gostreamv1.WatchResponse) error
 }
 
-// Server listens for updates from other servers
-type Server struct {
+// PubSub listens for updates from other servers
+type PubSub struct {
 	cl        redis.UniversalClient
 	clientPub ClientPublisher
 	// TODO: add some local storage
 }
 
-// NewServer ...
-func NewServer(ctx context.Context, redisURL string, clientPub ClientPublisher) (*Server, error) {
+// NewPubSub ...
+func NewPubSub(ctx context.Context, redisURL string, clientPub ClientPublisher) (*PubSub, error) {
 	opts, err := redis.ParseURL(redisURL)
 	if err != nil {
 		return nil, err
 	}
 
-	s := Server{cl: redis.NewClient(opts), clientPub: clientPub}
+	s := PubSub{cl: redis.NewClient(opts), clientPub: clientPub}
 
 	go s.subscribe(ctx)
 
@@ -38,12 +38,12 @@ func NewServer(ctx context.Context, redisURL string, clientPub ClientPublisher) 
 }
 
 // Close ...
-func (s *Server) Close() error {
+func (s *PubSub) Close() error {
 	return s.cl.Close()
 }
 
 // PublishToServers ...
-func (s *Server) PublishToServers(ctx context.Context, data *gostreamv1.WatchResponse) error {
+func (s *PubSub) PublishToServers(ctx context.Context, data *gostreamv1.WatchResponse) error {
 	b, err := proto.Marshal(data)
 	if err != nil {
 		return err
@@ -51,7 +51,7 @@ func (s *Server) PublishToServers(ctx context.Context, data *gostreamv1.WatchRes
 	return s.cl.Publish(ctx, redisChannel, string(b)).Err()
 }
 
-func (s *Server) subscribe(ctx context.Context) {
+func (s *PubSub) subscribe(ctx context.Context) {
 	sub := s.cl.Subscribe(ctx, redisChannel)
 	defer sub.Close()
 

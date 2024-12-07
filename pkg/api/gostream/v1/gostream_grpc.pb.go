@@ -22,7 +22,10 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type WatchersServiceClient interface {
+	// Watch connects to server streams
 	Watch(ctx context.Context, in *WatchRequest, opts ...grpc.CallOption) (WatchersService_WatchClient, error)
+	// Advertise returns the server stats useful for client-side loadbalancing
+	Advertise(ctx context.Context, in *AdvertiseRequest, opts ...grpc.CallOption) (*AdvertiseResponse, error)
 }
 
 type watchersServiceClient struct {
@@ -65,11 +68,23 @@ func (x *watchersServiceWatchClient) Recv() (*WatchResponse, error) {
 	return m, nil
 }
 
+func (c *watchersServiceClient) Advertise(ctx context.Context, in *AdvertiseRequest, opts ...grpc.CallOption) (*AdvertiseResponse, error) {
+	out := new(AdvertiseResponse)
+	err := c.cc.Invoke(ctx, "/com.lordvidex.gostream.v1.WatchersService/Advertise", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // WatchersServiceServer is the server API for WatchersService service.
 // All implementations must embed UnimplementedWatchersServiceServer
 // for forward compatibility
 type WatchersServiceServer interface {
+	// Watch connects to server streams
 	Watch(*WatchRequest, WatchersService_WatchServer) error
+	// Advertise returns the server stats useful for client-side loadbalancing
+	Advertise(context.Context, *AdvertiseRequest) (*AdvertiseResponse, error)
 	mustEmbedUnimplementedWatchersServiceServer()
 }
 
@@ -79,6 +94,9 @@ type UnimplementedWatchersServiceServer struct {
 
 func (UnimplementedWatchersServiceServer) Watch(*WatchRequest, WatchersService_WatchServer) error {
 	return status.Errorf(codes.Unimplemented, "method Watch not implemented")
+}
+func (UnimplementedWatchersServiceServer) Advertise(context.Context, *AdvertiseRequest) (*AdvertiseResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Advertise not implemented")
 }
 func (UnimplementedWatchersServiceServer) mustEmbedUnimplementedWatchersServiceServer() {}
 
@@ -114,13 +132,36 @@ func (x *watchersServiceWatchServer) Send(m *WatchResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
+func _WatchersService_Advertise_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdvertiseRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WatchersServiceServer).Advertise(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.lordvidex.gostream.v1.WatchersService/Advertise",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WatchersServiceServer).Advertise(ctx, req.(*AdvertiseRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // WatchersService_ServiceDesc is the grpc.ServiceDesc for WatchersService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var WatchersService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "com.lordvidex.gostream.v1.WatchersService",
 	HandlerType: (*WatchersServiceServer)(nil),
-	Methods:     []grpc.MethodDesc{},
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Advertise",
+			Handler:    _WatchersService_Advertise_Handler,
+		},
+	},
 	Streams: []grpc.StreamDesc{
 		{
 			StreamName:    "Watch",
@@ -294,7 +335,7 @@ var PetService_ServiceDesc = grpc.ServiceDesc{
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type UserServiceClient interface {
 	CreateUser(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*CreateUserResponse, error)
-	UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*UpdateUserRequest, error)
+	UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*UpdateUserResponse, error)
 	ListUsers(ctx context.Context, in *ListUsersRequest, opts ...grpc.CallOption) (*ListUsersResponse, error)
 }
 
@@ -315,8 +356,8 @@ func (c *userServiceClient) CreateUser(ctx context.Context, in *CreateUserReques
 	return out, nil
 }
 
-func (c *userServiceClient) UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*UpdateUserRequest, error) {
-	out := new(UpdateUserRequest)
+func (c *userServiceClient) UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*UpdateUserResponse, error) {
+	out := new(UpdateUserResponse)
 	err := c.cc.Invoke(ctx, "/com.lordvidex.gostream.v1.UserService/UpdateUser", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -338,7 +379,7 @@ func (c *userServiceClient) ListUsers(ctx context.Context, in *ListUsersRequest,
 // for forward compatibility
 type UserServiceServer interface {
 	CreateUser(context.Context, *CreateUserRequest) (*CreateUserResponse, error)
-	UpdateUser(context.Context, *UpdateUserRequest) (*UpdateUserRequest, error)
+	UpdateUser(context.Context, *UpdateUserRequest) (*UpdateUserResponse, error)
 	ListUsers(context.Context, *ListUsersRequest) (*ListUsersResponse, error)
 	mustEmbedUnimplementedUserServiceServer()
 }
@@ -350,7 +391,7 @@ type UnimplementedUserServiceServer struct {
 func (UnimplementedUserServiceServer) CreateUser(context.Context, *CreateUserRequest) (*CreateUserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateUser not implemented")
 }
-func (UnimplementedUserServiceServer) UpdateUser(context.Context, *UpdateUserRequest) (*UpdateUserRequest, error) {
+func (UnimplementedUserServiceServer) UpdateUser(context.Context, *UpdateUserRequest) (*UpdateUserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateUser not implemented")
 }
 func (UnimplementedUserServiceServer) ListUsers(context.Context, *ListUsersRequest) (*ListUsersResponse, error) {

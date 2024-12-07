@@ -1,7 +1,12 @@
 # gostream
 
+## Working Principle
+<p align="center">
+  <img src="./assets/sample.png"/>
+</p>
+
 ## Motivation
-How can we create several different clients that connect to a single server in a cluster but receive updates performed on
+How can we create several different clients that connect to only one server in a cluster but receive updates performed on
 any server in the cluster?
 
 ## Architecture

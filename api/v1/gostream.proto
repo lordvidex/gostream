@@ -6,7 +6,14 @@ option go_package = "github.com/lordvidex/gostream/pkg/api/gostream/v1;gostreamv
 import "google/api/annotations.proto";
 
 service WatchersService {
+  // Watch connects to server streams
   rpc Watch(WatchRequest) returns (stream WatchResponse) {}
+  // Advertise returns the server stats useful for client-side loadbalancing
+  rpc Advertise(AdvertiseRequest) returns (AdvertiseResponse) {
+    option (google.api.http) = {
+      get: "/watch/advertise"
+    };
+  }
 }
 
 service PetService {
@@ -31,7 +38,7 @@ service PetService {
 
 service UserService {
   rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {}
-  rpc UpdateUser(UpdateUserRequest) returns (UpdateUserRequest) {}
+  rpc UpdateUser(UpdateUserRequest) returns (UpdateUserResponse) {}
   rpc ListUsers(ListUsersRequest) returns (ListUsersResponse) {}
 }
 
@@ -80,6 +87,7 @@ message ListUsersResponse {
 
 message WatchRequest {
   repeated Entity entity = 1; // UNSPECIFIED will send updates of any entity
+  optional string identifier = 2; // optional identifier returned in server stats
 }
 
 message WatchResponse {
@@ -102,6 +110,19 @@ message WatchResponse {
   }
 }
 
+message AdvertiseRequest {
+  repeated ServerMetric metrics = 1;
+}
+
+message AdvertiseResponse {
+  repeated ServerMetricResponse response = 1;
+
+  message ServerMetricResponse {
+    ServerMetric metric = 1;
+    double value = 2;
+  }
+}
+
 enum EventKind {
   EVENT_KIND_UNSPECIFIED = 0;
   EVENT_KIND_SNAPSHOT    = 1; // full data
@@ -112,6 +133,12 @@ enum Entity {
   ENTITY_UNSPECIFIED = 0;
   ENTITY_PET         = 1;
   ENTITY_USER        = 2;
+}
+
+enum ServerMetric {
+  SERVER_METRIC_UNSPECIFIED = 0;
+  SERVER_METRIC_STREAMS = 1;
+  SERVER_METRIC_GOROUTINES = 2;
 }
 
 message Pet {

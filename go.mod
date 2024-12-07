@@ -5,6 +5,7 @@ go 1.23
 require (
 	github.com/Masterminds/squirrel v1.5.4
 	github.com/go-redis/redis/v8 v8.11.5
+	github.com/google/uuid v1.6.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.22.0
 	github.com/jackc/pgx/v5 v5.7.1
 	github.com/pressly/goose/v3 v3.22.1
