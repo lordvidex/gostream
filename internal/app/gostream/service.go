@@ -20,6 +20,8 @@ type Repository interface {
 // PetRepository ...
 type PetRepository interface {
 	CreatePet(context.Context, *gostreamv1.Pet) (uint64, error)
+	ListPets(context.Context) ([] *gostreamv1.Pet, error)
+	UpdatePet(context.Context, *gostreamv1.Pet) (error)
 }
 
 // UserRepository ...
