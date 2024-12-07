@@ -93,7 +93,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1UpdateUserRequest"
+              "$ref": "#/definitions/v1UpdateUserResponse"
             }
           },
           "default": {
@@ -120,6 +120,7 @@
     },
     "/com.lordvidex.gostream.v1.WatchersService/Watch": {
       "post": {
+        "summary": "Watch connects to server streams",
         "operationId": "WatchersService_Watch",
         "responses": {
           "200": {
@@ -254,9 +255,61 @@
           "PetService"
         ]
       }
+    },
+    "/watch/advertise": {
+      "get": {
+        "summary": "Advertise returns the server stats useful for client-side loadbalancing",
+        "operationId": "WatchersService_Advertise",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1AdvertiseResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "metrics",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "SERVER_METRIC_UNSPECIFIED",
+                "SERVER_METRIC_STREAMS",
+                "SERVER_METRIC_GOROUTINES"
+              ]
+            },
+            "collectionFormat": "multi"
+          }
+        ],
+        "tags": [
+          "WatchersService"
+        ]
+      }
     }
   },
   "definitions": {
+    "AdvertiseResponseServerMetricResponse": {
+      "type": "object",
+      "properties": {
+        "metric": {
+          "$ref": "#/definitions/v1ServerMetric"
+        },
+        "value": {
+          "type": "number",
+          "format": "double"
+        }
+      }
+    },
     "WatchResponseWatchData": {
       "type": "object",
       "properties": {
@@ -307,6 +360,18 @@
           "items": {
             "type": "object",
             "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "v1AdvertiseResponse": {
+      "type": "object",
+      "properties": {
+        "response": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/AdvertiseResponseServerMetricResponse"
           }
         }
       }
@@ -412,6 +477,15 @@
         }
       }
     },
+    "v1ServerMetric": {
+      "type": "string",
+      "enum": [
+        "SERVER_METRIC_UNSPECIFIED",
+        "SERVER_METRIC_STREAMS",
+        "SERVER_METRIC_GOROUTINES"
+      ],
+      "default": "SERVER_METRIC_UNSPECIFIED"
+    },
     "v1UpdatePetResponse": {
       "type": "object"
     },
@@ -422,6 +496,9 @@
           "$ref": "#/definitions/v1User"
         }
       }
+    },
+    "v1UpdateUserResponse": {
+      "type": "object"
     },
     "v1User": {
       "type": "object",
@@ -451,6 +528,10 @@
             "$ref": "#/definitions/v1Entity"
           },
           "title": "UNSPECIFIED will send updates of any entity"
+        },
+        "identifier": {
+          "type": "string",
+          "title": "optional identifier returned in server stats"
         }
       }
     },
