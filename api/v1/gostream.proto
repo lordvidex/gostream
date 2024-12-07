@@ -68,7 +68,8 @@ message CreateUserResponse {
 }
 
 message UpdateUserRequest {
-  User user = 1;
+  uint64 user_id = 1;
+  User user = 2;
 }
 
 message UpdateUserResponse {}

@@ -11,14 +11,14 @@ import (
 
 // UpdateUser ...
 func (i *Implementation) UpdateUser(ctx context.Context, req *gostreamv1.UpdateUserRequest) (*gostreamv1.UpdateUserResponse, error) {
-	user := req.User
-	err := i.userRepo.UpdateUser(ctx, user)
+	req.User.Id = req.UserId
+	err := i.userRepo.UpdateUser(ctx, req.User)
 	if err != nil {
 		fmt.Println("error updating user", err)
 		return nil, status.Errorf(codes.Internal, "error updating user: %v", err)
 	}
 
-	if err = i.publishUser(ctx, user); err != nil {
+	if err = i.publishUser(ctx, req.User); err != nil {
 		fmt.Println("got error publishing data", err)
 	}
 

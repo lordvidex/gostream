@@ -418,6 +418,10 @@
     "v1UpdateUserRequest": {
       "type": "object",
       "properties": {
+        "userId": {
+          "type": "string",
+          "format": "uint64"
+        },
         "user": {
           "$ref": "#/definitions/v1User"
         }
