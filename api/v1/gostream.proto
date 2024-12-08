@@ -43,7 +43,7 @@ service UserService {
       body: "*"
     };
   }
-  rpc UpdateUser(UpdateUserRequest) returns (UpdateUserRequest) {
+  rpc UpdateUser(UpdateUserRequest) returns (UpdateUserResponse) {
     option (google.api.http) = {
       put: "/user/{user_id}"
       body: "*"
