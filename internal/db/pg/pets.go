@@ -52,6 +52,9 @@ func (r *Repository) ListPets(ctx context.Context) ([]*gostreamv1.Pet, error) {
 
 		result = append(result, &u)
 	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
 	return result, err
 }
 
@@ -59,10 +62,10 @@ func (r *Repository) ListPets(ctx context.Context) ([]*gostreamv1.Pet, error) {
 func (r *Repository) UpdatePet(ctx context.Context, p *gostreamv1.Pet) error {
 	id := p.GetId()
 	q := sq.Update("pets").Where("id = ?", id).
-		PlaceholderFormat(sq.Dollar)
-	q = q.Set("kind", p.GetKind())
-	q = q.Set("name", p.GetName())
-	q = q.Set("age", p.GetAge())
+		PlaceholderFormat(sq.Dollar).
+		Set("kind", p.GetKind()).
+		Set("name", p.GetName()).
+		Set("age", p.GetAge())
 
 	query, params, err := q.ToSql()
 	if err != nil {

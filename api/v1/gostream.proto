@@ -30,9 +30,23 @@ service PetService {
 }
 
 service UserService {
-  rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {}
-  rpc UpdateUser(UpdateUserRequest) returns (UpdateUserRequest) {}
-  rpc ListUsers(ListUsersRequest) returns (ListUsersResponse) {}
+  rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {
+    option (google.api.http) = {
+      post: "/user"
+      body: "*"
+    };
+  }
+  rpc UpdateUser(UpdateUserRequest) returns (UpdateUserRequest) {
+    option (google.api.http) = {
+      put: "/user/{user_id}"
+      body: "*"
+    };
+  }
+  rpc ListUsers(ListUsersRequest) returns (ListUsersResponse) {
+    option(google.api.http) = {
+      get: "/user"
+    };
+  }
 }
 
 message CreatePetRequest {
@@ -69,7 +83,7 @@ message CreateUserResponse {
 
 message UpdateUserRequest {
   uint64 user_id = 1;
-  User user = 2;
+  User new_data = 2;
 }
 
 message UpdateUserResponse {}

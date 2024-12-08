@@ -52,18 +52,20 @@ func (r *Repository) ListUsers(ctx context.Context) ([]*gostreamv1.User, error) 
 
 		result = append(result, &u)
 	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
 	return result, err
 }
 
-
 // UpdateUser ...
-func (r *Repository) UpdateUser(ctx context.Context, p *gostreamv1.User) (error) {
+func (r *Repository) UpdateUser(ctx context.Context, p *gostreamv1.User) error {
 	id := p.GetId()
 	q := sq.Update("stream_users").Where("id = ?", id).
-		PlaceholderFormat(sq.Dollar)
-	q = q.Set("name", p.GetName())
-	q = q.Set("age", p.GetAge())
-	q = q.Set("nationality", p.GetNationality())
+		PlaceholderFormat(sq.Dollar).
+		Set("name", p.GetName()).
+		Set("age", p.GetAge()).
+		Set("nationality", p.GetNationality())
 
 	query, params, err := q.ToSql()
 	if err != nil {
