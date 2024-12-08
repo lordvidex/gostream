@@ -10,7 +10,14 @@ import (
 // Advertise ...
 func (i *Implementation) Advertise(ctx context.Context, req *gostreamv1.AdvertiseRequest) (*gostreamv1.AdvertiseResponse, error) {
 	result := make([]*gostreamv1.AdvertiseResponse_ServerMetricResponse, 0)
+
+	done := make(map[gostreamv1.ServerMetric]struct{})
 	for _, metric := range req.GetMetrics() {
+		if _, ok := done[metric]; ok {
+			continue
+		}
+		done[metric] = struct{}{}
+
 		switch metric {
 		case gostreamv1.ServerMetric_SERVER_METRIC_GOROUTINES:
 			result = append(result, &gostreamv1.AdvertiseResponse_ServerMetricResponse{

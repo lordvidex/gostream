@@ -39,7 +39,12 @@ func NewPubSub(ctx context.Context, redisURL string, clientPub ClientPublisher) 
 
 // Close ...
 func (s *PubSub) Close() error {
-	return s.cl.Close()
+	if err := s.cl.Close(); err != nil {
+		return err
+	}
+	fmt.Println("pubsub closed")
+	return nil
+
 }
 
 // PublishToServers ...
