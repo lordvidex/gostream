@@ -3,6 +3,7 @@ package watchers
 import (
 	"context"
 	"errors"
+	"fmt"
 	"sync"
 	"sync/atomic"
 
@@ -113,5 +114,6 @@ func (c *WatcherRegistrar) Close() error {
 	}
 
 	clear(c.watchers)
+	fmt.Println("client watcher closed")
 	return nil
 }

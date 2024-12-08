@@ -6,6 +6,8 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"os"
+	"time"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/lordvidex/gostream/internal/config"
@@ -14,6 +16,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
 
+	"github.com/catalystgo/catalystgo/closer"
 	"github.com/lordvidex/gostream/internal/app/gostream"
 	"github.com/lordvidex/gostream/internal/db/pg"
 	"github.com/lordvidex/gostream/internal/watchers"
@@ -22,12 +25,19 @@ import (
 
 // App ...
 type App struct {
-	cfg config.Server
+	closer closer.Closer
+	cfg    config.Server
 }
 
 // New ...
 func New(cfg config.Server) *App {
-	return &App{cfg: cfg}
+	return &App{
+		cfg: cfg,
+		closer: closer.New(
+			closer.WithSignals(os.Kill, os.Interrupt),
+			closer.WithTimeout(time.Minute*3),
+		),
+	}
 }
 
 // Serve ...
@@ -50,6 +60,8 @@ func (a *App) Serve(ctx context.Context) error {
 		return fmt.Errorf("error creating serverPubSub: %w", err)
 	}
 
+	a.closer.Add(clientWatcher.Close, serverPub.Close, repo.Close)
+
 	srv := gostream.NewService(repo, serverPub, clientWatcher)
 
 	s := grpc.NewServer()
@@ -57,6 +69,12 @@ func (a *App) Serve(ctx context.Context) error {
 	gostreamv1.RegisterUserServiceServer(s, srv)
 	gostreamv1.RegisterWatchersServiceServer(s, srv)
 	reflection.Register(s)
+
+	a.closer.AddByOrder(closer.HighOrder, func() error {
+		s.GracefulStop()
+		fmt.Println("grpc server gracefully stopped")
+		return nil
+	})
 
 	addr := fmt.Sprintf(":%d", a.cfg.GRPCPort)
 	log.Println("server listening on", addr)
@@ -66,24 +84,27 @@ func (a *App) Serve(ctx context.Context) error {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	g, ctx := errgroup.WithContext(ctx)
-	g.Go(func() error {
-		if err := s.Serve(lis); err != nil {
+	servers, ctx := errgroup.WithContext(ctx)
+	servers.Go(func() error {
+		if err = s.Serve(lis); err != nil {
 			return fmt.Errorf("server stopped with err: %w", err)
 		}
 		return nil
 	})
-	g.Go(func() error {
-		if err := serveHTTPGateway(ctx, a.cfg, addr); err != nil {
+	servers.Go(func() error {
+		if err = a.serveHTTPGateway(ctx, addr); err != nil {
 			return fmt.Errorf("server HTTP gateway stopped with err: %w", err)
 		}
 		return nil
 	})
 
-	return g.Wait()
+	err = servers.Wait() // servers finish first
+	a.closer.Wait()      // wait for connections to close
+
+	return err
 }
 
-func serveHTTPGateway(ctx context.Context, cfg config.Server, endpoint string) error {
+func (a *App) serveHTTPGateway(ctx context.Context, endpoint string) error {
 	mux := runtime.NewServeMux()
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 
@@ -91,5 +112,16 @@ func serveHTTPGateway(ctx context.Context, cfg config.Server, endpoint string) e
 		return err
 	}
 
-	return http.ListenAndServe(fmt.Sprintf(":%d", cfg.HTTPPort), mux)
+	s := &http.Server{
+		Addr:    fmt.Sprintf(":%d", a.cfg.HTTPPort),
+		Handler: mux,
+	}
+
+	a.closer.AddByOrder(closer.HighOrder, func() error {
+		shutCtx, cancel := context.WithTimeout(ctx, time.Minute)
+		defer cancel()
+		return s.Shutdown(shutCtx)
+	})
+
+	return s.ListenAndServe()
 }

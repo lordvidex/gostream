@@ -58,8 +58,9 @@ func WithRunMigrations(value bool) ApplyOption {
 }
 
 // Close ...
-func (r *Repository) Close() {
+func (r *Repository) Close() error {
 	r.pool.Close()
+	return nil
 }
 
 func pgMigrate(db *sql.DB) error {

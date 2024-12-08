@@ -3,10 +3,11 @@ package gostream
 import (
 	"fmt"
 
-	"github.com/lordvidex/gostream/internal/entity"
-	gostreamv1 "github.com/lordvidex/gostream/pkg/api/gostream/v1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	"github.com/lordvidex/gostream/internal/entity"
+	gostreamv1 "github.com/lordvidex/gostream/pkg/api/gostream/v1"
 )
 
 // Watch ...
