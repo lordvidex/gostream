@@ -32,23 +32,26 @@ func New(cfg config.Server) *App {
 
 // Serve ...
 func (a *App) Serve(ctx context.Context) error {
+
 	if a.cfg.DryRun {
 		log.Println("dry run mode enabled")
 		fmt.Printf("%+v\n", a.cfg)
 		return nil
 	}
+
 	repo, err := pg.NewRepository(ctx, a.cfg.DSN, pg.WithRunMigrations(a.cfg.RunMigrations))
 	if err != nil {
 		return err
 	}
 
-	clientPub := &watchers.Client{}
-	serverPub, err := watchers.NewServer(ctx, a.cfg.RedisURL, clientPub)
+	clientWatcher := watchers.NewWatcherRegistrar()
+	serverPub, err := watchers.NewPubSub(ctx, a.cfg.RedisURL, clientWatcher)
 	if err != nil {
 		return fmt.Errorf("error creating serverPubSub: %w", err)
 	}
 
-	srv := gostream.NewService(repo, serverPub)
+	srv := gostream.NewService(repo, serverPub, clientWatcher)
+
 	s := grpc.NewServer()
 	gostreamv1.RegisterPetServiceServer(s, srv)
 	gostreamv1.RegisterUserServiceServer(s, srv)
