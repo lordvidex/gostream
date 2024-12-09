@@ -10,6 +10,7 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.22.0
 	github.com/jackc/pgx/v5 v5.7.1
 	github.com/joho/godotenv v1.5.1
+	github.com/lordvidex/errs/v2 v2.0.0
 	github.com/pressly/goose/v3 v3.22.1
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.19.0

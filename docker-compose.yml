@@ -15,6 +15,48 @@ services:
     image: redis:alpine
     ports:
       - "6379:6379"
+  stream_server1:
+    container_name: stream_server1
+    env_file: ./configs/docker.env
+    build:
+      context: .
+    depends_on:
+      - postgres
+      - redis
+    ports:
+      - "50051:50051"
+      - "8080:8080"
+  stream_server2:
+    container_name: stream_server2
+    env_file: ./configs/docker.env
+    build:
+      context: .
+    depends_on:
+      - postgres
+      - redis
+    ports:
+      - "50052:50051"
+      - "8081:8080"
+  stream_server3:
+    container_name: stream_server3
+    env_file: ./configs/docker.env
+    build:
+      context: .
+    depends_on:
+      - postgres
+      - redis
+    ports:
+      - "50053:50051"
+      - "8082:8080"
+  stream_client1:
+    container_name: stream_client
+    build:
+      context: .
+    depends_on:
+      - stream_server1
+      - stream_server2
+      - stream_server3
+    command: ["client", "watch", "-c", "./configs/gostream.toml"]
 
 volumes:
   db:
