@@ -4,6 +4,7 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -26,8 +27,11 @@ func init() {
 var watchCmd = &cobra.Command{
 	Use:   "watch",
 	Short: "connects to any streaming server and listens for events",
-	RunE: func(cmd *cobra.Command, args []string) error {
-		return client.New(cfg.Client).Watch(cmd.Context())
+	Run: func(cmd *cobra.Command, args []string) {
+		if err := client.New(cfg.Client).Watch(cmd.Context()); err != nil {
+			fmt.Println("err: ", err)
+		}
+		fmt.Println("client finished")
 	},
 }
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/catalystgo/catalystgo/closer"
 	"github.com/go-redis/redis/v8"
 	gostreamv1 "github.com/lordvidex/gostream/pkg/api/gostream/v1"
 	"google.golang.org/protobuf/proto"
@@ -20,6 +21,8 @@ type ClientPublisher interface {
 type PubSub struct {
 	cl        redis.UniversalClient
 	clientPub ClientPublisher
+	closer    closer.Closer
+	done      chan struct{}
 	// TODO: add some local storage
 }
 
@@ -30,7 +33,17 @@ func NewPubSub(ctx context.Context, redisURL string, clientPub ClientPublisher) 
 		return nil, err
 	}
 
-	s := PubSub{cl: redis.NewClient(opts), clientPub: clientPub}
+	ctx, cancel := context.WithCancel(ctx)
+	s := PubSub{
+		cl:        redis.NewClient(opts),
+		clientPub: clientPub,
+		closer:    closer.New(),
+		done:      make(chan struct{}),
+	}
+	s.closer.AddByOrder(closer.HighOrder, func() error {
+		cancel()
+		return nil
+	})
 
 	go s.subscribe(ctx)
 
@@ -39,6 +52,12 @@ func NewPubSub(ctx context.Context, redisURL string, clientPub ClientPublisher) 
 
 // Close ...
 func (s *PubSub) Close() error {
+	// close ctx and subscriber
+	s.closer.CloseAll()
+	s.closer.Wait()
+	<-s.done
+
+	// close the client
 	if err := s.cl.Close(); err != nil {
 		return err
 	}
@@ -58,6 +77,9 @@ func (s *PubSub) PublishToServers(ctx context.Context, data *gostreamv1.WatchRes
 
 func (s *PubSub) subscribe(ctx context.Context) {
 	sub := s.cl.Subscribe(ctx, redisChannel)
+	defer func() {
+		close(s.done)
+	}()
 	defer sub.Close()
 
 	for {
