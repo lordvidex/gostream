@@ -4,6 +4,8 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"fmt"
+
 	"github.com/lordvidex/gostream/internal/cmd/server"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -23,8 +25,9 @@ func init() {
 var serveCmd = &cobra.Command{
 	Use:   "serve",
 	Short: "start a gostream server",
-	RunE: func(cmd *cobra.Command, args []string) error {
-		return server.New(cfg.Server).Serve(cmd.Context())
+	Run: func(cmd *cobra.Command, args []string) {
+		server.New(cfg.Server).Serve(cmd.Context())
+		fmt.Println("server finished")
 	},
 }
 

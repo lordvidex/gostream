@@ -2,13 +2,19 @@ package client
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"io"
 	"log"
-	"math/rand/v2"
+	"os"
+	"sync"
 
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/protobuf/encoding/protojson"
+
+	"github.com/catalystgo/catalystgo/closer"
 
 	"github.com/lordvidex/gostream/internal/config"
 	gostreamv1 "github.com/lordvidex/gostream/pkg/api/gostream/v1"
@@ -16,12 +22,17 @@ import (
 
 // App ...
 type App struct {
-	cfg config.Client
+	closer    closer.Closer
+	connCache sync.Map
+	cfg       config.Client
 }
 
 // New ...
 func New(cfg config.Client) *App {
-	return &App{cfg: cfg}
+	return &App{
+		cfg:    cfg,
+		closer: closer.New(closer.WithSignals(os.Kill, os.Interrupt)),
+	}
 }
 
 // Watch ...
@@ -33,10 +44,27 @@ func (a *App) Watch(ctx context.Context) error {
 		return nil
 	}
 
+	a.closer.Add(func() error {
+		a.connCache.Range(func(_, value any) bool {
+			if err := value.(*grpc.ClientConn).Close(); err != nil {
+				fmt.Println("failed tearing down *grpc.ClientConn", err)
+			}
+			return true
+		})
+		a.connCache.Clear()
+		return nil
+	})
+
+	var err error
 	if a.cfg.Connections > 1 {
-		return a.watchMultipleServers(ctx)
+		err = a.watchMultipleServers(ctx)
+	} else {
+		err = a.watchSingleServer(ctx, a.cfg.Name)
 	}
-	return a.watchSingleServer(ctx, a.cfg.Name)
+
+	a.closer.CloseAll()
+	a.closer.Wait()
+	return err
 }
 
 func (a *App) watchMultipleServers(ctx context.Context) error {
@@ -55,7 +83,7 @@ func (a *App) watchMultipleServers(ctx context.Context) error {
 }
 
 func (a *App) watchSingleServer(ctx context.Context, clientName string) error {
-	cl, err := a.findBestServer()
+	cl, err := a.findBestServer(clientName)
 	if err != nil {
 		return fmt.Errorf("couldn't find best server: %w", err)
 	}
@@ -69,19 +97,24 @@ func (a *App) watchSingleServer(ctx context.Context, clientName string) error {
 	}
 
 	for {
-		_, err := stream.Recv()
-		fmt.Printf("client %s got message\n", clientName)
+		v, err := stream.Recv()
+		b, _ := protojson.Marshal(v)
+		fmt.Printf("client %s got message: %v\n", clientName, string(b))
+
 		if err != nil {
+			if errors.Is(err, io.EOF) {
+				fmt.Println("stream finished")
+				return nil
+			}
 			return err
 		}
 	}
 }
 
-func (a *App) findBestServer() (gostreamv1.WatchersServiceClient, error) {
-	// TODO: implement, for quick testing, connect to first server
-	picked := rand.IntN(len(a.cfg.Servers))
-	addr := a.cfg.Servers[picked]
-	fmt.Println("picked server", addr)
+func (a *App) cachedConn(addr string) (*grpc.ClientConn, error) {
+	if conn, ok := a.connCache.Load(addr); ok {
+		return conn.(*grpc.ClientConn), nil
+	}
 
 	conn, err := grpc.NewClient(addr,
 		grpc.WithBlock(),
@@ -92,7 +125,8 @@ func (a *App) findBestServer() (gostreamv1.WatchersServiceClient, error) {
 		return nil, err
 	}
 
-	return gostreamv1.NewWatchersServiceClient(conn), nil
+	a.connCache.Store(addr, conn)
+	return conn, nil
 }
 
 func getClientName(name string) *string {
