@@ -1,6 +1,16 @@
+# single config for running gostream with docker
 [client]
-servers = ["localhost:50051", "localhost:50052", "localhost:50053"]
+connection_timeout = '5m0s'
 connections = 10
+dry_run = false
+entities = ['all']
+name = 'client1'
+servers = ['stream_server1:50051', 'stream_server2:50051', 'stream_server3:50051']
 [server]
-redis_url="redis://localhost:6379"
-dsn="postgres://postgres:postgres@localhost:5432/gostream" # TODO: change values, this is based on values from env.example
+dry_run = false
+grpc_port = 50051
+http_port = 8080
+log_file = ''
+# dsn = ... # better set from .env file (see env.example)
+# redis_url = ... # better set from .env file (see env.example)
+run_migrations = true

@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"syscall"
 	"time"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
@@ -36,7 +37,7 @@ func New(cfg config.Server) *App {
 	return &App{
 		cfg: cfg,
 		closer: closer.New(
-			closer.WithSignals(os.Kill, os.Interrupt),
+			closer.WithSignals(os.Kill, os.Interrupt, syscall.SIGTERM),
 			closer.WithTimeout(time.Minute*3),
 		),
 	}

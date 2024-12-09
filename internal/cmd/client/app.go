@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"sync"
+	"syscall"
 
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
@@ -22,6 +23,7 @@ import (
 
 // App ...
 type App struct {
+	ctx       context.Context
 	closer    closer.Closer
 	connCache sync.Map
 	cfg       config.Client
@@ -31,12 +33,16 @@ type App struct {
 func New(cfg config.Client) *App {
 	return &App{
 		cfg:    cfg,
-		closer: closer.New(closer.WithSignals(os.Kill, os.Interrupt)),
+		closer: closer.New(closer.WithSignals(os.Kill, os.Interrupt, syscall.SIGTERM)),
+		ctx:    context.Background(),
 	}
 }
 
 // Watch ...
 func (a *App) Watch(ctx context.Context) error {
+	var cancel func()
+	a.ctx, cancel = context.WithCancel(ctx)
+	defer cancel()
 
 	if a.cfg.DryRun {
 		log.Println("dry run mode enabled")
@@ -44,14 +50,8 @@ func (a *App) Watch(ctx context.Context) error {
 		return nil
 	}
 
-	a.closer.Add(func() error {
-		a.connCache.Range(func(_, value any) bool {
-			if err := value.(*grpc.ClientConn).Close(); err != nil {
-				fmt.Println("failed tearing down *grpc.ClientConn", err)
-			}
-			return true
-		})
-		a.connCache.Clear()
+	a.closer.AddByOrder(closer.HighOrder, func() error {
+		cancel()
 		return nil
 	})
 
@@ -70,7 +70,6 @@ func (a *App) Watch(ctx context.Context) error {
 func (a *App) watchMultipleServers(ctx context.Context) error {
 	g, ctx := errgroup.WithContext(ctx)
 	g.SetLimit(a.cfg.Connections)
-
 	for i := range a.cfg.Connections {
 		clientName := fmt.Sprintf("%s#%d", a.cfg.Name, i+1)
 		g.Go(func() error {
@@ -79,7 +78,6 @@ func (a *App) watchMultipleServers(ctx context.Context) error {
 	}
 
 	return g.Wait()
-
 }
 
 func (a *App) watchSingleServer(ctx context.Context, clientName string) error {
@@ -96,18 +94,19 @@ func (a *App) watchSingleServer(ctx context.Context, clientName string) error {
 		return fmt.Errorf("error watching: %w", err)
 	}
 
+	fmt.Printf("client %s connected to stream \n", clientName)
 	for {
 		v, err := stream.Recv()
-		b, _ := protojson.Marshal(v)
-		fmt.Printf("client %s got message: %v\n", clientName, string(b))
-
 		if err != nil {
 			if errors.Is(err, io.EOF) {
 				fmt.Println("stream finished")
 				return nil
 			}
+			fmt.Println("got error: ", err)
 			return err
 		}
+		b, _ := protojson.Marshal(v)
+		fmt.Printf("client %s got message: %v\n", clientName, string(b))
 	}
 }
 
@@ -125,6 +124,7 @@ func (a *App) cachedConn(addr string) (*grpc.ClientConn, error) {
 		return nil, err
 	}
 
+	a.closer.Add(conn.Close)
 	a.connCache.Store(addr, conn)
 	return conn, nil
 }

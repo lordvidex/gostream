@@ -26,7 +26,9 @@ var serveCmd = &cobra.Command{
 	Use:   "serve",
 	Short: "start a gostream server",
 	Run: func(cmd *cobra.Command, args []string) {
-		server.New(cfg.Server).Serve(cmd.Context())
+		if err := server.New(cfg.Server).Serve(cmd.Context()); err != nil {
+			fmt.Println("finished with error", err)
+		}
 		fmt.Println("server finished")
 	},
 }
@@ -42,11 +44,11 @@ func init() {
 	serveCmd.Flags().StringP("redis", "r", "", "redis connection string")
 	serveCmd.Flags().Bool("dry-run", false, "print configs and exit")
 
-	viper.BindPFlag("server.grpc_port", serveCmd.Flags().Lookup("grpc"))
-	viper.BindPFlag("server.http_port", serveCmd.Flags().Lookup("http"))
-	viper.BindPFlag("server.dsn", serveCmd.Flags().Lookup("dsn"))
-	viper.BindPFlag("server.redis_url", serveCmd.Flags().Lookup("redis"))
-	viper.BindPFlag("server.log_file", serveCmd.Flags().Lookup("log"))
-	viper.BindPFlag("server.run_migrations", serveCmd.Flags().Lookup("migrations"))
-	viper.BindPFlag("server.dry_run", serveCmd.Flags().Lookup("dry-run"))
+	_ = viper.BindPFlag("server.grpc_port", serveCmd.Flags().Lookup("grpc"))
+	_ = viper.BindPFlag("server.http_port", serveCmd.Flags().Lookup("http"))
+	_ = viper.BindPFlag("server.dsn", serveCmd.Flags().Lookup("dsn"))
+	_ = viper.BindPFlag("server.redis_url", serveCmd.Flags().Lookup("redis"))
+	_ = viper.BindPFlag("server.log_file", serveCmd.Flags().Lookup("log"))
+	_ = viper.BindPFlag("server.run_migrations", serveCmd.Flags().Lookup("migrations"))
+	_ = viper.BindPFlag("server.dry_run", serveCmd.Flags().Lookup("dry-run"))
 }

@@ -45,10 +45,10 @@ func init() {
 	watchCmd.Flags().Bool("dry-run", false, "print configs and exit")
 	watchCmd.Flags().DurationP("timeout", "t", time.Minute*5, "timeout for connecting to the server")
 
-	viper.BindPFlag("client.connections", watchCmd.Flags().Lookup("connections"))
-	viper.BindPFlag("client.name", watchCmd.Flags().Lookup("name"))
-	viper.BindPFlag("client.servers", watchCmd.Flags().Lookup("servers"))
-	viper.BindPFlag("client.entities", watchCmd.Flags().Lookup("entities"))
-	viper.BindPFlag("client.connection_timeout", watchCmd.Flags().Lookup("timeout"))
-	viper.BindPFlag("client.dry_run", watchCmd.Flags().Lookup("dry-run"))
+	_ = viper.BindPFlag("client.connections", watchCmd.Flags().Lookup("connections"))
+	_ = viper.BindPFlag("client.name", watchCmd.Flags().Lookup("name"))
+	_ = viper.BindPFlag("client.servers", watchCmd.Flags().Lookup("servers"))
+	_ = viper.BindPFlag("client.entities", watchCmd.Flags().Lookup("entities"))
+	_ = viper.BindPFlag("client.connection_timeout", watchCmd.Flags().Lookup("timeout"))
+	_ = viper.BindPFlag("client.dry_run", watchCmd.Flags().Lookup("dry-run"))
 }
