@@ -60,20 +60,19 @@ func (r *Repository) ListUsers(ctx context.Context) ([]*gostreamv1.User, error) 
 
 // UpdateUser ...
 func (r *Repository) UpdateUser(ctx context.Context, p *gostreamv1.User) error {
-	id := p.GetId()
-	q := sq.Update("stream_users").Where("id = ?", id).
+	q := sq.Update("stream_users").Where("id = ?", p.GetId()).
 		PlaceholderFormat(sq.Dollar).
 		Set("name", p.GetName()).
 		Set("age", p.GetAge()).
-		Set("nationality", p.GetNationality())
+		Set("nationality", p.GetNationality()).Suffix("RETURNING id")
 
 	query, params, err := q.ToSql()
 	if err != nil {
 		fmt.Println("sq error: ", err)
 		return err
 	}
-	if _, err := r.pool.Exec(ctx, query, params...); err != nil {
-		fmt.Println("Exec error: ", err)
+	if err := r.pool.QueryRow(ctx, query, params...).Scan(&p.Id); err != nil {
+		fmt.Println("Update Exec error: ", err)
 		return err
 	}
 	return nil
