@@ -7,7 +7,7 @@ container_running() {
 }
 
 if ! container_running "stream_db" || ! container_running "stream_redis"; then
-  docker-compose up stream_db stream_redis -d
+  docker-compose up postgres redis -d
 fi
 
 make build > /dev/null

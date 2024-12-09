@@ -2,9 +2,13 @@ package pg
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/jackc/pgx/v5"
+	"github.com/lordvidex/errs/v2"
+
 	gostreamv1 "github.com/lordvidex/gostream/pkg/api/gostream/v1"
 )
 
@@ -60,20 +64,21 @@ func (r *Repository) ListUsers(ctx context.Context) ([]*gostreamv1.User, error) 
 
 // UpdateUser ...
 func (r *Repository) UpdateUser(ctx context.Context, p *gostreamv1.User) error {
-	q := sq.Update("stream_users").Where("id = ?", p.GetId()).
+	query, params, err := sq.Update("stream_users").Where(sq.Eq{"id": p.GetId()}).
 		PlaceholderFormat(sq.Dollar).
 		Set("name", p.GetName()).
 		Set("age", p.GetAge()).
-		Set("nationality", p.GetNationality()).Suffix("RETURNING id")
+		Set("nationality", p.GetNationality()).
+		Suffix("RETURNING id").ToSql()
 
-	query, params, err := q.ToSql()
 	if err != nil {
-		fmt.Println("sq error: ", err)
-		return err
+		return errs.B().Code(errs.Internal).Msg("sq error").Err()
 	}
-	if err := r.pool.QueryRow(ctx, query, params...).Scan(&p.Id); err != nil {
-		fmt.Println("Update Exec error: ", err)
-		return err
+	if err = r.pool.QueryRow(ctx, query, params...).Scan(&p.Id); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return errs.B().Code(errs.InvalidArgument).Show().Msg("user does not exist").Err()
+		}
+		return errs.WrapCode(err, errs.Internal, "database error occurred")
 	}
 	return nil
 }

@@ -2,9 +2,13 @@ package pg
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/jackc/pgx/v5"
+	"github.com/lordvidex/errs/v2"
+
 	gostreamv1 "github.com/lordvidex/gostream/pkg/api/gostream/v1"
 )
 
@@ -68,11 +72,12 @@ func (r *Repository) UpdatePet(ctx context.Context, p *gostreamv1.Pet) error {
 
 	query, params, err := q.ToSql()
 	if err != nil {
-		fmt.Println("sq error: ", err)
-		return err
+		return errs.B().Code(errs.Internal).Msg("sq error").Err()
 	}
-	if err := r.pool.QueryRow(ctx, query, params...).Scan(&p.Id); err != nil {
-		fmt.Println("Update Exec error: ", err)
+	if err = r.pool.QueryRow(ctx, query, params...).Scan(&p.Id); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return errs.B().Code(errs.InvalidArgument).Msg("pet does not exist").Err()
+		}
 		return err
 	}
 	return nil

@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/lordvidex/errs/v2/status"
+
 	gostreamv1 "github.com/lordvidex/gostream/pkg/api/gostream/v1"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 // UpdatePet ...
@@ -14,8 +14,7 @@ func (i *Implementation) UpdatePet(ctx context.Context, req *gostreamv1.UpdatePe
 	req.NewData.Id = req.PetId
 	err := i.petRepo.UpdatePet(ctx, req.NewData)
 	if err != nil {
-		fmt.Println("error updating pet", err)
-		return nil, status.Errorf(codes.Internal, "error updating pet: %v", err)
+		return nil, status.Err(err)
 	}
 
 	if err = i.publishPet(ctx, req.NewData); err != nil {

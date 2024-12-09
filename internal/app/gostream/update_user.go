@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/lordvidex/errs/v2/status"
+
 	gostreamv1 "github.com/lordvidex/gostream/pkg/api/gostream/v1"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 // UpdateUser ...
@@ -14,8 +14,7 @@ func (i *Implementation) UpdateUser(ctx context.Context, req *gostreamv1.UpdateU
 	req.NewData.Id = req.UserId
 	err := i.userRepo.UpdateUser(ctx, req.NewData)
 	if err != nil {
-		fmt.Println("error updating user", err)
-		return nil, status.Errorf(codes.Internal, "error updating user: %v", err)
+		return nil, status.Err(err)
 	}
 
 	if err = i.publishUser(ctx, req.NewData); err != nil {
