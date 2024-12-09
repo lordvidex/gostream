@@ -60,20 +60,19 @@ func (r *Repository) ListPets(ctx context.Context) ([]*gostreamv1.Pet, error) {
 
 // UpdatePet ...
 func (r *Repository) UpdatePet(ctx context.Context, p *gostreamv1.Pet) error {
-	id := p.GetId()
-	q := sq.Update("pets").Where("id = ?", id).
+	q := sq.Update("pets").Where("id = ?", p.GetId()).
 		PlaceholderFormat(sq.Dollar).
 		Set("kind", p.GetKind()).
 		Set("name", p.GetName()).
-		Set("age", p.GetAge())
+		Set("age", p.GetAge()).Suffix("RETURNING id")
 
 	query, params, err := q.ToSql()
 	if err != nil {
 		fmt.Println("sq error: ", err)
 		return err
 	}
-	if _, err := r.pool.Exec(ctx, query, params...); err != nil {
-		fmt.Println("Exec error: ", err)
+	if err := r.pool.QueryRow(ctx, query, params...).Scan(&p.Id); err != nil {
+		fmt.Println("Update Exec error: ", err)
 		return err
 	}
 	return nil
