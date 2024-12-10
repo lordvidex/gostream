@@ -84,8 +84,8 @@ func (r *Repository) UpdateUser(ctx context.Context, p *gostreamv1.User) error {
 }
 
 // DeleteUser ...
-func (r *Repository) DeleteUser(ctx context.Context, p *gostreamv1.User) error {
-	query, params, err := sq.Delete("stream_users").Where(sq.Eq{"id": p.GetId()}).
+func (r *Repository) DeleteUser(ctx context.Context, p uint64) error {
+	query, params, err := sq.Delete("stream_users").Where(sq.Eq{"id": p}).
 		PlaceholderFormat(sq.Dollar).ToSql()
 
 	if err != nil {

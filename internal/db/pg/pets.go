@@ -84,8 +84,8 @@ func (r *Repository) UpdatePet(ctx context.Context, p *gostreamv1.Pet) error {
 }
 
 // DeletePet ...
-func (r *Repository) DeletePet(ctx context.Context, p *gostreamv1.Pet) error {
-	query, params, err := sq.Delete("pets").Where("id = ?", p.GetId()).
+func (r *Repository) DeletePet(ctx context.Context, p uint64) error {
+	query, params, err := sq.Delete("pets").Where("id = ?", p).
 		PlaceholderFormat(sq.Dollar).ToSql()
 	if err != nil {
 		return errs.B().Code(errs.Internal).Msg("sq error").Err()
