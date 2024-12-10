@@ -117,6 +117,35 @@
       }
     },
     "/pet/{petId}": {
+      "delete": {
+        "operationId": "PetService_DeletePet",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DeletePetResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "petId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          }
+        ],
+        "tags": [
+          "PetService"
+        ]
+      },
       "put": {
         "operationId": "PetService_UpdatePet",
         "responses": {
@@ -213,6 +242,35 @@
       }
     },
     "/user/{userId}": {
+      "delete": {
+        "operationId": "UserService_DeleteUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DeleteUserResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          }
+        ],
+        "tags": [
+          "UserService"
+        ]
+      },
       "put": {
         "operationId": "UserService_UpdateUser",
         "responses": {
@@ -409,6 +467,12 @@
           "format": "uint64"
         }
       }
+    },
+    "v1DeletePetResponse": {
+      "type": "object"
+    },
+    "v1DeleteUserResponse": {
+      "type": "object"
     },
     "v1Entity": {
       "type": "string",

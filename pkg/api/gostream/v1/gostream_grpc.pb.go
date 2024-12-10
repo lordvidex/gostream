@@ -179,6 +179,7 @@ type PetServiceClient interface {
 	CreatePet(ctx context.Context, in *CreatePetRequest, opts ...grpc.CallOption) (*CreatePetResponse, error)
 	UpdatePet(ctx context.Context, in *UpdatePetRequest, opts ...grpc.CallOption) (*UpdatePetResponse, error)
 	ListPets(ctx context.Context, in *ListPetsRequest, opts ...grpc.CallOption) (*ListPetsResponse, error)
+	DeletePet(ctx context.Context, in *DeletePetRequest, opts ...grpc.CallOption) (*DeletePetResponse, error)
 }
 
 type petServiceClient struct {
@@ -216,6 +217,15 @@ func (c *petServiceClient) ListPets(ctx context.Context, in *ListPetsRequest, op
 	return out, nil
 }
 
+func (c *petServiceClient) DeletePet(ctx context.Context, in *DeletePetRequest, opts ...grpc.CallOption) (*DeletePetResponse, error) {
+	out := new(DeletePetResponse)
+	err := c.cc.Invoke(ctx, "/com.lordvidex.gostream.v1.PetService/DeletePet", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // PetServiceServer is the server API for PetService service.
 // All implementations must embed UnimplementedPetServiceServer
 // for forward compatibility
@@ -223,6 +233,7 @@ type PetServiceServer interface {
 	CreatePet(context.Context, *CreatePetRequest) (*CreatePetResponse, error)
 	UpdatePet(context.Context, *UpdatePetRequest) (*UpdatePetResponse, error)
 	ListPets(context.Context, *ListPetsRequest) (*ListPetsResponse, error)
+	DeletePet(context.Context, *DeletePetRequest) (*DeletePetResponse, error)
 	mustEmbedUnimplementedPetServiceServer()
 }
 
@@ -238,6 +249,9 @@ func (UnimplementedPetServiceServer) UpdatePet(context.Context, *UpdatePetReques
 }
 func (UnimplementedPetServiceServer) ListPets(context.Context, *ListPetsRequest) (*ListPetsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListPets not implemented")
+}
+func (UnimplementedPetServiceServer) DeletePet(context.Context, *DeletePetRequest) (*DeletePetResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeletePet not implemented")
 }
 func (UnimplementedPetServiceServer) mustEmbedUnimplementedPetServiceServer() {}
 
@@ -306,6 +320,24 @@ func _PetService_ListPets_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _PetService_DeletePet_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeletePetRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PetServiceServer).DeletePet(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.lordvidex.gostream.v1.PetService/DeletePet",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PetServiceServer).DeletePet(ctx, req.(*DeletePetRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // PetService_ServiceDesc is the grpc.ServiceDesc for PetService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -325,6 +357,10 @@ var PetService_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "ListPets",
 			Handler:    _PetService_ListPets_Handler,
 		},
+		{
+			MethodName: "DeletePet",
+			Handler:    _PetService_DeletePet_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "v1/gostream.proto",
@@ -337,6 +373,7 @@ type UserServiceClient interface {
 	CreateUser(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*CreateUserResponse, error)
 	UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*UpdateUserResponse, error)
 	ListUsers(ctx context.Context, in *ListUsersRequest, opts ...grpc.CallOption) (*ListUsersResponse, error)
+	DeleteUser(ctx context.Context, in *DeleteUserRequest, opts ...grpc.CallOption) (*DeleteUserResponse, error)
 }
 
 type userServiceClient struct {
@@ -374,6 +411,15 @@ func (c *userServiceClient) ListUsers(ctx context.Context, in *ListUsersRequest,
 	return out, nil
 }
 
+func (c *userServiceClient) DeleteUser(ctx context.Context, in *DeleteUserRequest, opts ...grpc.CallOption) (*DeleteUserResponse, error) {
+	out := new(DeleteUserResponse)
+	err := c.cc.Invoke(ctx, "/com.lordvidex.gostream.v1.UserService/DeleteUser", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserServiceServer is the server API for UserService service.
 // All implementations must embed UnimplementedUserServiceServer
 // for forward compatibility
@@ -381,6 +427,7 @@ type UserServiceServer interface {
 	CreateUser(context.Context, *CreateUserRequest) (*CreateUserResponse, error)
 	UpdateUser(context.Context, *UpdateUserRequest) (*UpdateUserResponse, error)
 	ListUsers(context.Context, *ListUsersRequest) (*ListUsersResponse, error)
+	DeleteUser(context.Context, *DeleteUserRequest) (*DeleteUserResponse, error)
 	mustEmbedUnimplementedUserServiceServer()
 }
 
@@ -396,6 +443,9 @@ func (UnimplementedUserServiceServer) UpdateUser(context.Context, *UpdateUserReq
 }
 func (UnimplementedUserServiceServer) ListUsers(context.Context, *ListUsersRequest) (*ListUsersResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListUsers not implemented")
+}
+func (UnimplementedUserServiceServer) DeleteUser(context.Context, *DeleteUserRequest) (*DeleteUserResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteUser not implemented")
 }
 func (UnimplementedUserServiceServer) mustEmbedUnimplementedUserServiceServer() {}
 
@@ -464,6 +514,24 @@ func _UserService_ListUsers_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserService_DeleteUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).DeleteUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.lordvidex.gostream.v1.UserService/DeleteUser",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).DeleteUser(ctx, req.(*DeleteUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // UserService_ServiceDesc is the grpc.ServiceDesc for UserService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -482,6 +550,10 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListUsers",
 			Handler:    _UserService_ListUsers_Handler,
+		},
+		{
+			MethodName: "DeleteUser",
+			Handler:    _UserService_DeleteUser_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

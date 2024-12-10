@@ -34,6 +34,11 @@ service PetService {
       get: "/pet"
     };
   }
+  rpc DeletePet(DeletePetRequest) returns (DeletePetResponse) {
+    option (google.api.http) = {
+      delete: "/pet/{pet_id}"
+    };
+  }
 }
 
 service UserService {
@@ -52,6 +57,11 @@ service UserService {
   rpc ListUsers(ListUsersRequest) returns (ListUsersResponse) {
     option(google.api.http) = {
       get: "/user"
+    };
+  }
+  rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse) {
+    option (google.api.http) = {
+      delete: "/user/{user_id}"
     };
   }
 }
@@ -80,6 +90,12 @@ message ListPetsResponse {
   // TODO: add page metadata
 }
 
+message DeletePetRequest {
+  uint64 pet_id = 1;
+}
+
+message DeletePetResponse {}
+
 message CreateUserRequest {
   User user = 1;
 }
@@ -99,6 +115,12 @@ message ListUsersRequest {}
 message ListUsersResponse {
   repeated User users = 1;
 }
+
+message DeleteUserRequest {
+  uint64 user_id = 1;
+}
+
+message DeleteUserResponse {}
 
 message WatchRequest {
   repeated Entity entity = 1; // UNSPECIFIED will send updates of any entity

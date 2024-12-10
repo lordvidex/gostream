@@ -82,3 +82,19 @@ func (r *Repository) UpdatePet(ctx context.Context, p *gostreamv1.Pet) error {
 	}
 	return nil
 }
+
+// DeletePet ...
+func (r *Repository) DeletePet(ctx context.Context, p *gostreamv1.Pet) error {
+	query, params, err := sq.Delete("pets").Where("id = ?", p.GetId()).
+		PlaceholderFormat(sq.Dollar).ToSql()
+	if err != nil {
+		return errs.B().Code(errs.Internal).Msg("sq error").Err()
+	}
+	if _, err = r.pool.Exec(ctx, query, params...); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return errs.B().Code(errs.InvalidArgument).Msg("pet does not exist").Err()
+		}
+		return err
+	}
+	return nil
+}
