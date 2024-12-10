@@ -94,7 +94,7 @@ func (r *Repository) DeletePet(ctx context.Context, p uint64) error {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return errs.B().Code(errs.InvalidArgument).Msg("pet does not exist").Err()
 		}
-		return err
+		return errs.WrapCode(err, errs.Internal, "database error occurred")
 	}
 	return nil
 }
