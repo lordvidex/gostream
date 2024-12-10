@@ -82,3 +82,20 @@ func (r *Repository) UpdateUser(ctx context.Context, p *gostreamv1.User) error {
 	}
 	return nil
 }
+
+// DeleteUser ...
+func (r *Repository) DeleteUser(ctx context.Context, p *gostreamv1.User) error {
+	query, params, err := sq.Delete("stream_users").Where(sq.Eq{"id": p.GetId()}).
+		PlaceholderFormat(sq.Dollar).ToSql()
+
+	if err != nil {
+		return errs.B().Code(errs.Internal).Msg("sq error").Err()
+	}
+	if _, err = r.pool.Exec(ctx, query, params...); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return errs.B().Code(errs.InvalidArgument).Show().Msg("user does not exist").Err()
+		}
+		return errs.WrapCode(err, errs.Internal, "database error occurred")
+	}
+	return nil
+}

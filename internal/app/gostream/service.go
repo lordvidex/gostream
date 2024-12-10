@@ -30,6 +30,7 @@ type PetRepository interface {
 	CreatePet(context.Context, *gostreamv1.Pet) (uint64, error)
 	ListPets(context.Context) ([]*gostreamv1.Pet, error)
 	UpdatePet(context.Context, *gostreamv1.Pet) error
+	DeletePet(context.Context, uint64) error
 }
 
 // UserRepository ...
@@ -37,6 +38,7 @@ type UserRepository interface {
 	CreateUser(context.Context, *gostreamv1.User) (uint64, error)
 	ListUsers(context.Context) ([]*gostreamv1.User, error)
 	UpdateUser(context.Context, *gostreamv1.User) error
+	DeleteUser(context.Context, uint64) error
 }
 
 // Implementation ...
