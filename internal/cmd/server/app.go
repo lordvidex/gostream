@@ -26,6 +26,10 @@ import (
 	gostreamv1 "github.com/lordvidex/gostream/pkg/api/gostream/v1"
 )
 
+const (
+	shutdownTimeout = 5 * time.Second
+)
+
 // App ...
 type App struct {
 	closer closer.Closer
@@ -74,8 +78,7 @@ func (a *App) Serve(ctx context.Context) error {
 	reflection.Register(s)
 
 	a.closer.AddByOrder(closer.HighOrder, func() error {
-		s.GracefulStop()
-		fmt.Println("grpc server gracefully stopped")
+		gracefulShutdown(s)
 		return nil
 	})
 
@@ -129,4 +132,21 @@ func (a *App) serveHTTPGateway(ctx context.Context, endpoint string) error {
 	})
 
 	return s.ListenAndServe()
+}
+
+func gracefulShutdown(s *grpc.Server) {
+	ch := make(chan struct{})
+	go func() {
+		s.GracefulStop() // active tcp connections might not get closed, so we fallback to timeout
+		close(ch)
+	}()
+	select {
+	case <-ch:
+		fmt.Println("all connections closed")
+	case <-time.After(shutdownTimeout):
+		fmt.Printf("waited for %v to close gracefully, forcing close\n", shutdownTimeout)
+	}
+	s.Stop()
+
+	fmt.Println("grpc server gracefully stopped")
 }

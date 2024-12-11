@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/lordvidex/errs/v2"
+
 	gostreamv1 "github.com/lordvidex/gostream/pkg/api/gostream/v1"
 )
 
