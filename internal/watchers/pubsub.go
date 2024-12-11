@@ -6,8 +6,9 @@ import (
 
 	"github.com/catalystgo/catalystgo/closer"
 	"github.com/go-redis/redis/v8"
-	gostreamv1 "github.com/lordvidex/gostream/pkg/api/gostream/v1"
 	"google.golang.org/protobuf/proto"
+
+	gostreamv1 "github.com/lordvidex/gostream/pkg/api/gostream/v1"
 )
 
 const redisChannel = "gostream"
@@ -23,7 +24,6 @@ type PubSub struct {
 	clientPub ClientPublisher
 	closer    closer.Closer
 	done      chan struct{}
-	// TODO: add some local storage
 }
 
 // NewPubSub ...

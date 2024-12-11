@@ -16,6 +16,9 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
 
+	"github.com/lordvidex/gostream/internal/db/inmemory"
+	"github.com/lordvidex/gostream/internal/entity"
+
 	"github.com/lordvidex/gostream/internal/config"
 
 	"github.com/catalystgo/catalystgo/closer"
@@ -42,7 +45,7 @@ func New(cfg config.Server) *App {
 		cfg: cfg,
 		closer: closer.New(
 			closer.WithSignals(os.Kill, os.Interrupt, syscall.SIGTERM),
-			closer.WithTimeout(time.Minute*3),
+			closer.WithTimeout(time.Minute),
 		),
 	}
 }
@@ -61,7 +64,29 @@ func (a *App) Serve(ctx context.Context) error {
 		return err
 	}
 
+	petSource := pg.NewPetDataSource(repo)
+	userSource := pg.NewUserDataSource(repo)
+
 	clientWatcher := watchers.NewWatcherRegistrar()
+	cacheWatcher := watchers.NewCache(ctx, clientWatcher)
+
+	// ---------------------
+	petCache, err := inmemory.NewCache(ctx,
+		inmemory.NewArray[uint64, entity.Pet](),
+		inmemory.WithDataSource(petSource),
+		inmemory.WithDataSourceUpdateCallback(inmemory.Snapshot, cacheWatcher.UpdatePets))
+	if err != nil {
+		return fmt.Errorf("error creating inmemory cache: %w", err)
+	}
+	userCache, err := inmemory.NewCache(ctx,
+		inmemory.NewArray[uint64, entity.User](),
+		inmemory.WithDataSource(userSource),
+		inmemory.WithDataSourceUpdateCallback(inmemory.Diff, cacheWatcher.UpdateUsers))
+	if err != nil {
+		return fmt.Errorf("error creating inmemory cache: %w", err)
+	}
+	// -----------------
+
 	serverPub, err := watchers.NewPubSub(ctx, a.cfg.RedisURL, clientWatcher)
 	if err != nil {
 		return fmt.Errorf("error creating serverPubSub: %w", err)
@@ -69,7 +94,7 @@ func (a *App) Serve(ctx context.Context) error {
 
 	a.closer.Add(clientWatcher.Close, serverPub.Close, repo.Close)
 
-	srv := gostream.NewService(repo, serverPub, clientWatcher)
+	srv := gostream.NewService(repo, serverPub, clientWatcher, userCache, petCache)
 
 	s := grpc.NewServer()
 	gostreamv1.RegisterPetServiceServer(s, srv)

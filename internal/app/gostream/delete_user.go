@@ -16,6 +16,7 @@ func (i *Implementation) DeleteUser(ctx context.Context, req *gostreamv1.DeleteU
 		return nil, status.Err(err)
 	}
 
+	i.userCache.Delete(req.UserId)
 	if err = i.publishUserDelete(ctx, req.UserId); err != nil {
 		fmt.Println("got error publishing delete data", err)
 	}

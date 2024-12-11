@@ -600,9 +600,6 @@
         },
         "update": {
           "$ref": "#/definitions/WatchResponseWatchData"
-        },
-        "delete": {
-          "$ref": "#/definitions/WatchResponseWatchData"
         }
       }
     }

@@ -8,9 +8,72 @@ import (
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v5"
 	"github.com/lordvidex/errs/v2"
+	"github.com/lordvidex/gostream/internal/db/inmemory"
+	"github.com/lordvidex/gostream/internal/entity"
 
 	gostreamv1 "github.com/lordvidex/gostream/pkg/api/gostream/v1"
 )
+
+var _ inmemory.DataSource[uint64, entity.User] = (*UserDataSource)(nil)
+
+// UserDataSource implements inmemory.DataSource
+type UserDataSource struct {
+	*Repository
+}
+
+func NewUserDataSource(repo *Repository) *UserDataSource {
+	return &UserDataSource{repo}
+}
+
+func (s *UserDataSource) Hash(ctx context.Context) (string, error) {
+	query, params, err := sq.Select("md5_chain(id || name || age || nationality)").
+		From("stream_users").ToSql()
+	if err != nil {
+		return "", err
+	}
+	var result string
+	if err = s.pool.QueryRow(ctx, query, params...).Scan(&result); err != nil {
+		return "", err
+	}
+	return result, nil
+}
+
+func (s *UserDataSource) FetchAll(ctx context.Context) ([]entity.User, error) {
+	res, err := s.ListUsers(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	fin := make([]entity.User, 0, len(res))
+	for _, u := range res {
+		fin = append(fin, entity.User{User: u})
+	}
+
+	return fin, nil
+}
+
+func (s *UserDataSource) Fetch(ctx context.Context, id ...uint64) ([]entity.User, error) {
+	query, params, err := sq.Select("id", "name", "age", "nationality").From("stream_users").
+		Where(sq.Eq{"id": id}).ToSql()
+	if err != nil {
+		return nil, err
+	}
+	rows, err := s.pool.Query(ctx, query, params...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	res := make([]entity.User, 0)
+	for rows.Next() {
+		var x gostreamv1.User
+		if err = rows.Scan(&x.Id, &x.Name, &x.Age, &x.Nationality); err != nil {
+			return nil, err
+		}
+		res = append(res, entity.User{User: &x})
+	}
+	return res, nil
+}
 
 // CreateUser ...
 func (r *Repository) CreateUser(ctx context.Context, p *gostreamv1.User) (uint64, error) {

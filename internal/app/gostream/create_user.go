@@ -7,6 +7,8 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/lordvidex/gostream/internal/entity"
+
 	gostreamv1 "github.com/lordvidex/gostream/pkg/api/gostream/v1"
 )
 
@@ -20,6 +22,7 @@ func (i *Implementation) CreateUser(ctx context.Context, req *gostreamv1.CreateU
 	}
 
 	user.Id = id
+	i.userCache.Store(id, entity.User{User: user})
 	if err = i.publishUserUpdate(ctx, user); err != nil {
 		fmt.Println("got error publishing data", err)
 	}

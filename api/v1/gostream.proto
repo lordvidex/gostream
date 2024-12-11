@@ -83,6 +83,7 @@ message UpdatePetResponse {}
 
 message ListPetsRequest {
   // TODO: add filters
+  // TODO: add cache option
 }
 
 message ListPetsResponse {
@@ -132,7 +133,6 @@ message WatchResponse {
   oneof data {
     WatchSnapshot snapshot = 2;
     WatchData update       = 3;
-    WatchData delete       = 4;
   }
 
   message WatchSnapshot {

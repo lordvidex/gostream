@@ -9,8 +9,71 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/lordvidex/errs/v2"
 
+	"github.com/lordvidex/gostream/internal/db/inmemory"
+	"github.com/lordvidex/gostream/internal/entity"
 	gostreamv1 "github.com/lordvidex/gostream/pkg/api/gostream/v1"
 )
+
+var _ inmemory.DataSource[uint64, entity.Pet] = (*PetDataSource)(nil)
+
+// PetDataSource implements inmemory.DataSource
+type PetDataSource struct {
+	*Repository
+}
+
+// NewPetDataSource ...
+func NewPetDataSource(repo *Repository) *PetDataSource {
+	return &PetDataSource{repo}
+}
+
+func (p *PetDataSource) Hash(ctx context.Context) (string, error) {
+	query, params, err := sq.Select("md5_chain(id || kind || name || age)").
+		From("pets").ToSql()
+	if err != nil {
+		return "", err
+	}
+	var result string
+	if err = p.pool.QueryRow(ctx, query, params...).Scan(&result); err != nil {
+		return "", err
+	}
+	return result, nil
+}
+
+func (p *PetDataSource) FetchAll(ctx context.Context) ([]entity.Pet, error) {
+	res, err := p.ListPets(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	fin := make([]entity.Pet, 0, len(res))
+	for _, pet := range res {
+		fin = append(fin, entity.Pet{Pet: pet})
+	}
+	return fin, nil
+}
+
+func (p *PetDataSource) Fetch(ctx context.Context, id ...uint64) ([]entity.Pet, error) {
+	query, params, err := sq.Select("id", "kind", "name", "age").
+		From("pets").Where(sq.Eq{"id": id}).ToSql()
+	if err != nil {
+		return nil, err
+	}
+	rows, err := p.pool.Query(ctx, query, params...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	res := make([]entity.Pet, 0)
+	for rows.Next() {
+		var x gostreamv1.Pet
+		if err = rows.Scan(&x.Id, &x.Kind, &x.Name, &x.Age); err != nil {
+			return nil, err
+		}
+		res = append(res, entity.Pet{Pet: &x})
+	}
+	return res, nil
+}
 
 // CreatePet ...
 func (r *Repository) CreatePet(ctx context.Context, p *gostreamv1.Pet) (uint64, error) {

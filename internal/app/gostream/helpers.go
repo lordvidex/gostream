@@ -3,14 +3,62 @@ package gostream
 import (
 	"context"
 
+	"github.com/lordvidex/gostream/internal/entity"
 	gostreamv1 "github.com/lordvidex/gostream/pkg/api/gostream/v1"
 )
+
+func makePetSnapshot(v []entity.Pet) *gostreamv1.WatchResponse {
+	return &gostreamv1.WatchResponse{
+		Kind: gostreamv1.EventKind_EVENT_KIND_SNAPSHOT,
+		Data: &gostreamv1.WatchResponse_Snapshot{
+			Snapshot: &gostreamv1.WatchResponse_WatchSnapshot{
+				Snapshot: descPets(v),
+			},
+		},
+	}
+}
+func makeUserSnapshot(v []entity.User) *gostreamv1.WatchResponse {
+	return &gostreamv1.WatchResponse{
+		Kind: gostreamv1.EventKind_EVENT_KIND_SNAPSHOT,
+		Data: &gostreamv1.WatchResponse_Snapshot{
+			Snapshot: &gostreamv1.WatchResponse_WatchSnapshot{
+				Snapshot: descUsers(v),
+			},
+		},
+	}
+}
+
+func descPets(data []entity.Pet) []*gostreamv1.WatchResponse_WatchData {
+	arr := make([]*gostreamv1.WatchResponse_WatchData, len(data))
+	for i, v := range data {
+		arr[i] = &gostreamv1.WatchResponse_WatchData{
+			Data: &gostreamv1.WatchResponse_WatchData_Pet{
+				Pet: v.Pet,
+			},
+			Entity: gostreamv1.Entity_ENTITY_PET,
+		}
+	}
+	return arr
+}
+
+func descUsers(data []entity.User) []*gostreamv1.WatchResponse_WatchData {
+	arr := make([]*gostreamv1.WatchResponse_WatchData, len(data))
+	for i, v := range data {
+		arr[i] = &gostreamv1.WatchResponse_WatchData{
+			Data: &gostreamv1.WatchResponse_WatchData_User{
+				User: v.User,
+			},
+			Entity: gostreamv1.Entity_ENTITY_USER,
+		}
+	}
+	return arr
+}
 
 func (i *Implementation) publishPetDelete(ctx context.Context, id uint64) error {
 	data := &gostreamv1.WatchResponse{
 		Kind: gostreamv1.EventKind_EVENT_KIND_DELETE,
-		Data: &gostreamv1.WatchResponse_Delete{
-			Delete: &gostreamv1.WatchResponse_WatchData{
+		Data: &gostreamv1.WatchResponse_Update{
+			Update: &gostreamv1.WatchResponse_WatchData{
 				Entity: gostreamv1.Entity_ENTITY_PET,
 				Data: &gostreamv1.WatchResponse_WatchData_Pet{
 					Pet: &gostreamv1.Pet{
@@ -26,8 +74,8 @@ func (i *Implementation) publishPetDelete(ctx context.Context, id uint64) error 
 func (i *Implementation) publishUserDelete(ctx context.Context, id uint64) error {
 	data := &gostreamv1.WatchResponse{
 		Kind: gostreamv1.EventKind_EVENT_KIND_DELETE,
-		Data: &gostreamv1.WatchResponse_Delete{
-			Delete: &gostreamv1.WatchResponse_WatchData{
+		Data: &gostreamv1.WatchResponse_Update{
+			Update: &gostreamv1.WatchResponse_WatchData{
 				Entity: gostreamv1.Entity_ENTITY_USER,
 				Data: &gostreamv1.WatchResponse_WatchData_User{
 					User: &gostreamv1.User{

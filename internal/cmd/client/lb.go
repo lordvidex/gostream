@@ -39,24 +39,12 @@ func (a *App) findBestServer(clientName string) (gostreamv1.WatchersServiceClien
 	)
 
 	for _, addr := range a.cfg.Servers {
-		conn, err := a.cachedConn(addr)
-		if err != nil {
-			fmt.Println("error getting conn for addr:", addr)
-			totalErr = errs.Wrap(totalErr, err)
-			continue
-		}
-		ctx, _ := context.WithTimeout(a.ctx, a.cfg.ConnectionTimeout)
-		cl := gostreamv1.NewWatchersServiceClient(conn)
-
-		var res *gostreamv1.AdvertiseResponse
-		res, err = cl.Advertise(ctx, &gostreamv1.AdvertiseRequest{
-			Metrics: []gostreamv1.ServerMetric{gostreamv1.ServerMetric_SERVER_METRIC_STREAMS},
-		})
+		srv, err := a.connectServer(addr)
 		if err != nil {
 			totalErr = errs.Wrap(totalErr, err)
 			continue
 		}
-		servers = append(servers, server{client: cl, load: getScore(res), addr: addr})
+		servers = append(servers, *srv)
 	}
 
 	if len(servers) == 0 {
@@ -67,6 +55,26 @@ func (a *App) findBestServer(clientName string) (gostreamv1.WatchersServiceClien
 	fmt.Println("got servers: ", servers)
 	fmt.Printf("client %s picked server: %s\n", clientName, servers[0].addr)
 	return servers[0].client, nil
+}
+
+func (a *App) connectServer(addr string) (*server, error) {
+	conn, err := a.cachedConn(addr)
+	if err != nil {
+		return nil, fmt.Errorf("error getting conn for addr: %v", addr)
+	}
+
+	ctx, cancel := context.WithTimeout(a.ctx, a.cfg.ConnectionTimeout)
+	defer cancel()
+
+	cl := gostreamv1.NewWatchersServiceClient(conn)
+
+	res, err := cl.Advertise(ctx, &gostreamv1.AdvertiseRequest{
+		Metrics: []gostreamv1.ServerMetric{gostreamv1.ServerMetric_SERVER_METRIC_STREAMS},
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &server{client: cl, load: getScore(res), addr: addr}, nil
 }
 
 func getScore(res *gostreamv1.AdvertiseResponse) float64 {

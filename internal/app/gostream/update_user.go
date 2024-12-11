@@ -6,6 +6,8 @@ import (
 
 	"github.com/lordvidex/errs/v2/status"
 
+	"github.com/lordvidex/gostream/internal/entity"
+
 	gostreamv1 "github.com/lordvidex/gostream/pkg/api/gostream/v1"
 )
 
@@ -17,6 +19,7 @@ func (i *Implementation) UpdateUser(ctx context.Context, req *gostreamv1.UpdateU
 		return nil, status.Err(err)
 	}
 
+	i.userCache.Store(req.UserId, entity.User{User: req.NewData})
 	if err = i.publishUserUpdate(ctx, req.NewData); err != nil {
 		fmt.Println("got error publishing data", err)
 	}

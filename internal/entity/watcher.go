@@ -55,12 +55,12 @@ func (w *Watcher) Close() {
 	close(w.updates)
 }
 
-// Closed ...
+// IsClosed ...
 func (w *Watcher) IsClosed() bool {
 	return w.closed.Load()
 }
 
-// Updates returns the updates send channel.
+// Send ...
 func (w *Watcher) Send(update *gostreamv1.WatchResponse) {
 	if w.closed.Load() {
 		return
