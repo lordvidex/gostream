@@ -54,6 +54,8 @@ github.com/lann/ps v0.0.0-20150810152359-62de8c46ede0 h1:P6pPBnrTSX3DEVR4fDembhR
 github.com/lann/ps v0.0.0-20150810152359-62de8c46ede0/go.mod h1:vmVJ0l/dxyfGW6FmdpVm2joNMFikkuWg0EoCKLGUMNw=
 github.com/lordvidex/errs/v2 v2.0.0 h1:OHtGUcun5KrXTyvnifiMu7z6v0taF8fSf4X/cQbkrUQ=
 github.com/lordvidex/errs/v2 v2.0.0/go.mod h1:kzJBYoaM/qvwApw8v/LDZj7hB7H4HBOviGhDKaYjaTo=
+github.com/lordvidex/errs/v2 v2.0.1 h1:8WimpM+ckifLen5GWRqtvkTFb3HbllOFAtxgemJkbF0=
+github.com/lordvidex/errs/v2 v2.0.1/go.mod h1:kzJBYoaM/qvwApw8v/LDZj7hB7H4HBOviGhDKaYjaTo=
 github.com/magiconair/properties v1.8.7 h1:IeQXZAiQcpL9mgcAe1Nu6cX9LLw6ExEHKjN0VQdvPDY=
 github.com/magiconair/properties v1.8.7/go.mod h1:Dhd985XPs7jluiymwWYZ0G4Z61jb3vdS329zhj2hYo0=
 github.com/mattn/go-isatty v0.0.20 h1:xfD0iDuEKnDkl03q4limB+vH+GxLEtL/jb4xVJSWWEY=

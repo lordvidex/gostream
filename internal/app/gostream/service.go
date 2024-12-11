@@ -25,6 +25,18 @@ type Repository interface {
 	UserRepository
 }
 
+type UserCache interface {
+	Store(uint64, entity.User)
+	Delete(uint64)
+	Snapshot() []entity.User
+}
+
+type PetCache interface {
+	Store(uint64, entity.Pet)
+	Delete(uint64)
+	Snapshot() []entity.Pet
+}
+
 // PetRepository ...
 type PetRepository interface {
 	CreatePet(context.Context, *gostreamv1.Pet) (uint64, error)
@@ -47,15 +59,18 @@ type Implementation struct {
 	gostreamv1.UnimplementedPetServiceServer
 	gostreamv1.UnimplementedUserServiceServer
 	gostreamv1.UnimplementedWatchersServiceServer
-	//repos
+	// repos
 	petRepo  PetRepository
 	userRepo UserRepository
+	// caches
+	petCache  PetCache
+	userCache UserCache
 	// pubs
 	serverPub ServerPublisher
 	watchers  WatchRegistrar
 }
 
 // NewService ...
-func NewService(r Repository, sp ServerPublisher, wr WatchRegistrar) *Implementation {
-	return &Implementation{petRepo: r, userRepo: r, serverPub: sp, watchers: wr}
+func NewService(r Repository, sp ServerPublisher, wr WatchRegistrar, u UserCache, p PetCache) *Implementation {
+	return &Implementation{petRepo: r, userRepo: r, serverPub: sp, watchers: wr, userCache: u, petCache: p}
 }

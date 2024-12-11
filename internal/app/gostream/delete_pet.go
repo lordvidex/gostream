@@ -16,6 +16,7 @@ func (i *Implementation) DeletePet(ctx context.Context, req *gostreamv1.DeletePe
 		return nil, status.Err(err)
 	}
 
+	i.petCache.Delete(req.PetId)
 	if err = i.publishPetDelete(ctx, req.PetId); err != nil {
 		fmt.Println("got error publishing delete data", err)
 	}

@@ -86,20 +86,13 @@ func (c *WatcherRegistrar) PublishToClients(ctx context.Context, data *gostreamv
 	var channels []gostreamv1.Entity
 
 	switch data.GetKind() {
-	case gostreamv1.EventKind_EVENT_KIND_UPDATE:
+	case gostreamv1.EventKind_EVENT_KIND_UPDATE, gostreamv1.EventKind_EVENT_KIND_DELETE:
 		update := data.GetUpdate()
 		if update == nil {
 			return errors.New("kind is update, but update is nil")
 		}
-		entity := update.GetEntity()
-		channels = []gostreamv1.Entity{entity, gostreamv1.Entity_ENTITY_UNSPECIFIED}
-	case gostreamv1.EventKind_EVENT_KIND_DELETE:
-		del := data.GetDelete()
-		if del == nil {
-			return errors.New("kind is delete, but delete is nil")
-		}
-		entity := del.GetEntity()
-		channels = []gostreamv1.Entity{entity, gostreamv1.Entity_ENTITY_UNSPECIFIED}
+		e := update.GetEntity()
+		channels = []gostreamv1.Entity{e, gostreamv1.Entity_ENTITY_UNSPECIFIED}
 	}
 
 	if len(channels) == 0 {
