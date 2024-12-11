@@ -6,7 +6,41 @@ import (
 	gostreamv1 "github.com/lordvidex/gostream/pkg/api/gostream/v1"
 )
 
-func (i *Implementation) publishPet(ctx context.Context, p *gostreamv1.Pet) error {
+func (i *Implementation) publishPetDelete(ctx context.Context, id uint64) error {
+	data := &gostreamv1.WatchResponse{
+		Kind: gostreamv1.EventKind_EVENT_KIND_DELETE,
+		Data: &gostreamv1.WatchResponse_Delete{
+			Delete: &gostreamv1.WatchResponse_WatchData{
+				Entity: gostreamv1.Entity_ENTITY_PET,
+				Data: &gostreamv1.WatchResponse_WatchData_Pet{
+					Pet: &gostreamv1.Pet{
+						Id: id,
+					},
+				},
+			},
+		},
+	}
+	return i.publishData(ctx, data)
+}
+
+func (i *Implementation) publishUserDelete(ctx context.Context, id uint64) error {
+	data := &gostreamv1.WatchResponse{
+		Kind: gostreamv1.EventKind_EVENT_KIND_DELETE,
+		Data: &gostreamv1.WatchResponse_Delete{
+			Delete: &gostreamv1.WatchResponse_WatchData{
+				Entity: gostreamv1.Entity_ENTITY_USER,
+				Data: &gostreamv1.WatchResponse_WatchData_User{
+					User: &gostreamv1.User{
+						Id: id,
+					},
+				},
+			},
+		},
+	}
+	return i.publishData(ctx, data)
+}
+
+func (i *Implementation) publishPetUpdate(ctx context.Context, p *gostreamv1.Pet) error {
 	data := &gostreamv1.WatchResponse{
 		Kind: gostreamv1.EventKind_EVENT_KIND_UPDATE,
 		Data: &gostreamv1.WatchResponse_Update{
@@ -21,7 +55,7 @@ func (i *Implementation) publishPet(ctx context.Context, p *gostreamv1.Pet) erro
 	return i.publishData(ctx, data)
 }
 
-func (i *Implementation) publishUser(ctx context.Context, p *gostreamv1.User) error {
+func (i *Implementation) publishUserUpdate(ctx context.Context, p *gostreamv1.User) error {
 	data := &gostreamv1.WatchResponse{
 		Kind: gostreamv1.EventKind_EVENT_KIND_UPDATE,
 		Data: &gostreamv1.WatchResponse_Update{

@@ -488,10 +488,11 @@
       "enum": [
         "EVENT_KIND_UNSPECIFIED",
         "EVENT_KIND_SNAPSHOT",
-        "EVENT_KIND_UPDATE"
+        "EVENT_KIND_UPDATE",
+        "EVENT_KIND_DELETE"
       ],
       "default": "EVENT_KIND_UNSPECIFIED",
-      "title": "- EVENT_KIND_SNAPSHOT: full data\n - EVENT_KIND_UPDATE: only partial updated data"
+      "title": "- EVENT_KIND_SNAPSHOT: full data\n - EVENT_KIND_UPDATE: only partial updated data\n - EVENT_KIND_DELETE: only deleted data"
     },
     "v1ListPetsResponse": {
       "type": "object",
@@ -598,6 +599,9 @@
           "$ref": "#/definitions/WatchResponseWatchSnapshot"
         },
         "update": {
+          "$ref": "#/definitions/WatchResponseWatchData"
+        },
+        "delete": {
           "$ref": "#/definitions/WatchResponseWatchData"
         }
       }

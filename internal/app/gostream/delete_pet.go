@@ -2,6 +2,7 @@ package gostream
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/lordvidex/errs/v2/status"
 
@@ -13,6 +14,10 @@ func (i *Implementation) DeletePet(ctx context.Context, req *gostreamv1.DeletePe
 	err := i.petRepo.DeletePet(ctx, req.PetId)
 	if err != nil {
 		return nil, status.Err(err)
+	}
+
+	if err = i.publishPetDelete(ctx, req.PetId); err != nil {
+		fmt.Println("got error publishing delete data", err)
 	}
 
 	return &gostreamv1.DeletePetResponse{}, nil

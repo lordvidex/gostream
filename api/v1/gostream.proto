@@ -132,6 +132,7 @@ message WatchResponse {
   oneof data {
     WatchSnapshot snapshot = 2;
     WatchData update       = 3;
+    WatchData delete       = 4;
   }
 
   message WatchSnapshot {
@@ -164,6 +165,7 @@ enum EventKind {
   EVENT_KIND_UNSPECIFIED = 0;
   EVENT_KIND_SNAPSHOT    = 1; // full data
   EVENT_KIND_UPDATE      = 2; // only partial updated data
+  EVENT_KIND_DELETE      = 3; // only deleted data
 }
 
 enum Entity {

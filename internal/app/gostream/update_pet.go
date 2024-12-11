@@ -17,7 +17,7 @@ func (i *Implementation) UpdatePet(ctx context.Context, req *gostreamv1.UpdatePe
 		return nil, status.Err(err)
 	}
 
-	if err = i.publishPet(ctx, req.NewData); err != nil {
+	if err = i.publishPetUpdate(ctx, req.NewData); err != nil {
 		fmt.Println("got error publishing data", err)
 	}
 

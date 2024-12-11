@@ -17,7 +17,7 @@ func (i *Implementation) UpdateUser(ctx context.Context, req *gostreamv1.UpdateU
 		return nil, status.Err(err)
 	}
 
-	if err = i.publishUser(ctx, req.NewData); err != nil {
+	if err = i.publishUserUpdate(ctx, req.NewData); err != nil {
 		fmt.Println("got error publishing data", err)
 	}
 
