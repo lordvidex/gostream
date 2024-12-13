@@ -28,6 +28,7 @@ type Server struct {
 // Client ...
 type Client struct {
 	Name              string
+	LogFile           string `mapstructure:"log_file"`
 	Servers           []string
 	Entities          SpaceSeparatedEntities
 	Connections       int
