@@ -1,6 +1,7 @@
 package inmemory
 
 import (
+	"container/list"
 	"iter"
 	"sync"
 )
@@ -11,20 +12,32 @@ import (
 // 3. Fast delete
 // 4. Snapshot requires sorting
 type Map[K comparable, V Value[K]] struct {
-	data map[K]V
+	data map[K]*list.Element
+	l    list.List
 	mu   sync.RWMutex
+}
+
+func (m *Map[K, V]) lazyInit() {
+	if m.data == nil {
+		m.data = make(map[K]*list.Element)
+	}
 }
 
 func (m *Map[K, V]) Add(k K, v V) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	m.data[k] = v
+	m.lazyInit()
+	el := m.l.PushBack(v)
+	m.data[k] = el
+
 }
 
 func (m *Map[K, V]) AddAll(vs []V) {
 	m.mu.Lock()
+	m.lazyInit()
 	for _, v := range vs {
-		m.data[v.Key()] = v
+		el := m.l.PushBack(v)
+		m.data[v.Key()] = el
 	}
 	m.mu.Unlock()
 }
@@ -32,34 +45,36 @@ func (m *Map[K, V]) AddAll(vs []V) {
 func (m *Map[K, V]) Remove(k K) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	if m.data != nil {
-		delete(m.data, k)
+	el := m.data[k]
+	if el != nil {
+		m.l.Remove(el)
 	}
+	delete(m.data, k)
 }
 
 func (m *Map[K, V]) Get(k K) (V, bool) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
-	for keys := range m.data {
-		if keys == k {
-			return m.data[keys], true
-		}
+	value, ok := m.data[k]
+	if !ok {
+		var v V
+		return v, false
 	}
-	var v V // alternative to *new(V) but without alloc
-	return v, false
+	return value.Value.(V), true
 }
 
 func (m *Map[K, V]) Clear() {
 	m.mu.Lock()
-	m.data = make(map[K]V)
+	m.data = make(map[K]*list.Element)
+	m.l = list.List{}
 	m.mu.Unlock()
 }
 
 func (m *Map[K, V]) Snapshot() []V {
 	m.mu.RLock()
-	defer m.mu.RUnlock()
 	values := make([]V, 0, len(m.data))
-	for _, value := range m.data {
+	m.mu.RUnlock()
+	for value := range m.Iter() {
 		values = append(values, value)
 	}
 	return values
@@ -70,10 +85,11 @@ func (m *Map[K, V]) Iter() iter.Seq[V] {
 		m.mu.RLock()
 		defer m.mu.RUnlock()
 
-		for _, v := range m.data {
-			if !yield(v) {
+		for el := m.l.Front(); el != nil; el = el.Next() {
+			if !yield(el.Value.(V)) {
 				return
 			}
 		}
+
 	}
 }

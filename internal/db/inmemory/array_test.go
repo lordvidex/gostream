@@ -29,3 +29,9 @@ func TestArray_Get(t *testing.T) {
 	_, ok := arr.Get(0)
 	assert.Equal(t, false, ok)
 }
+
+func TestArray_Add(t *testing.T){
+	var arr Array[uint64, *entity.User]
+	arr.add(1, &entity.User{})
+
+}
