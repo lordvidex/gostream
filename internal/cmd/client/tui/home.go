@@ -63,20 +63,19 @@ func (m homeModel) View() string {
 		lipgloss.Bottom,
 		lipgloss.JoinVertical(
 			lipgloss.Left,
-			styled(cache, m.width/2, m.height/2),
-			styled(logs, m.width/2, m.height/2),
+			styled(cache, m.width*3/4, m.height/2),
+			styled(logs, m.width*3/4, m.height/2),
 		),
-		styled(edit, m.width/2, m.height),
+		styled(edit, m.width/4, m.height),
 	)
 }
 
 func (m homeModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
-		m.width = msg.Width -
-			(box.GetHorizontalFrameSize() * 4)
-		m.height = msg.Height - (box.GetVerticalFrameSize() * 4)
-		m.models[logs].(*logsModel).SetSize(m.width/2, m.height/2)
+		m.width = msg.Width - box.GetHorizontalFrameSize()
+		m.height = msg.Height - box.GetVerticalFrameSize()
+		m.models[logs].(*logsModel).SetSize(m.width*3/4, m.height/2)
 		m.loaded = true
 		return m, nil
 	case tea.KeyMsg:
