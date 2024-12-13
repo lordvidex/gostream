@@ -71,10 +71,7 @@ func initConfig() {
 	viper.AutomaticEnv()
 
 	// read secrets in env file
-	if err := godotenv.Load(); err == nil {
-		fmt.Println("successfully loaded secrets!!")
-	}
-
+	godotenv.Load()
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
 	}
