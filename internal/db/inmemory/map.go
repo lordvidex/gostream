@@ -23,6 +23,13 @@ func (m *Map[K, V]) lazyInit() {
 	}
 }
 
+func NewMap[K comparable, V Value[K]]() *Map[K, V] {
+	return &Map[K, V]{
+		data: make(map[K]*list.Element),
+		l:    list.List{},
+	}
+}
+
 func (m *Map[K, V]) Add(k K, v V) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
