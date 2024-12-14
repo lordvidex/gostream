@@ -130,9 +130,10 @@ message WatchRequest {
 
 message WatchResponse {
   EventKind kind = 1;
+  Entity entity  = 2;
   oneof data {
-    WatchSnapshot snapshot = 2;
-    WatchData update       = 3;
+    WatchSnapshot snapshot = 3;
+    WatchData update       = 4;
   }
 
   message WatchSnapshot {
@@ -140,10 +141,9 @@ message WatchResponse {
   }
 
   message WatchData {
-    Entity entity = 1;
     oneof data {
-      Pet pet   = 2;
-      User user = 3;
+      Pet pet   = 1;
+      User user = 2;
     }
   }
 }

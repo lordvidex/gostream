@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"github.com/charmbracelet/bubbles/timer"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 
@@ -16,12 +17,13 @@ const (
 )
 
 var box = lipgloss.NewStyle().
-	Padding(0, 1)
+	BorderStyle(lipgloss.RoundedBorder()).
+	Padding(1)
 var selected = box.
-	BorderStyle(lipgloss.BlockBorder()).
 	BorderForeground(lipgloss.Color("#ff00ff"))
 
 type homeModel struct {
+	cl       *Client
 	models   []tea.Model
 	loaded   bool
 	quitting bool
@@ -30,12 +32,13 @@ type homeModel struct {
 	height   int
 }
 
-func newHome() homeModel {
+func newHome(cl *Client) homeModel {
 	return homeModel{
+		cl: cl,
 		models: []tea.Model{
 			newLogs(),
-			newCache(),
-			newEdit(),
+			newCache(cl),
+			newEdit(cl),
 		},
 	}
 }
@@ -54,30 +57,38 @@ func (m homeModel) View() string {
 
 	styled := func(s section, width, height int) string {
 		if s == m.selected {
-			return selected.Render(lipgloss.Place(width, height, lipgloss.Left, lipgloss.Top, m.models[s].View()))
+			return selected.Render(lipgloss.Place(width, height-5, lipgloss.Left, lipgloss.Top, m.models[s].View()))
 		}
-		return box.Render(lipgloss.Place(width, height, lipgloss.Left, lipgloss.Top, m.models[s].View()))
+		return box.Render(lipgloss.Place(width-5, height-5, lipgloss.Left, lipgloss.Top, m.models[s].View()))
 	}
 
 	return lipgloss.JoinHorizontal(
-		lipgloss.Bottom,
+		lipgloss.Center,
 		lipgloss.JoinVertical(
-			lipgloss.Left,
-			styled(cache, m.width*3/4, m.height/2),
-			styled(logs, m.width*3/4, m.height/2),
+			lipgloss.Center,
+			styled(cache, m.width*3/4, (m.height/2)-5),
+			styled(logs, m.width*3/4, (m.height/2)-5),
 		),
 		styled(edit, m.width/4, m.height),
 	)
 }
 
 func (m homeModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var cmd tea.Cmd
+	var cmds []tea.Cmd
+
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.width = msg.Width - box.GetHorizontalFrameSize()
 		m.height = msg.Height - box.GetVerticalFrameSize()
-		m.models[logs].(*logsModel).SetSize(m.width*3/4, m.height/2)
+		m.models[logs], cmd = m.models[logs].Update(tea.WindowSizeMsg{Width: m.width / 2, Height: m.height / 2})
+		cmds = append(cmds, cmd)
+		m.models[cache], cmd = m.models[cache].Update(tea.WindowSizeMsg{Width: m.width / 2, Height: m.height / 2})
+		cmds = append(cmds, cmd)
+		m.models[edit], cmd = m.models[edit].Update(tea.WindowSizeMsg{Width: m.width / 2, Height: m.height})
+		cmds = append(cmds, cmd)
 		m.loaded = true
-		return m, nil
+		return m, tea.Batch(cmds...)
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "ctrl+c":
@@ -85,23 +96,35 @@ func (m homeModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case "tab":
 			m.selected = (m.selected + 1) % section(len(m.models))
-			return m, nil
+			return m, m.models[edit].Init()
 		}
-	// case updateMsg:
-	// case deleteMsg:
-	// case snapshotMsg:
+	case restartEditMsg:
+		m.models[edit] = newEdit(m.cl)
+		return m, m.models[edit].Init()
+	case timer.TimeoutMsg, timer.TickMsg: // always propagate to edit timer
+		m.models[edit], cmd = m.models[edit].Update(msg)
+		cmds = append(cmds, cmd)
+	case updateMsg:
+		m.models[cache].(*cacheModel).AddItem(msg.Pet)
+	case deleteMsg:
+		m.models[cache].(*cacheModel).DeleteItem(msg.ID)
+	case snapshotMsg:
+		m.models[cache].(*cacheModel).SetItems(msg.Pets)
 	case logMsg:
-		m.models[logs].(*logsModel).AddItem(msg.JSON)
+		m.models[logs].(*logsModel).AddItem(msg.Source, msg.JSON)
 		return m, nil
 	}
-	var cmd tea.Cmd
+
 	m.models[m.selected], cmd = m.models[m.selected].Update(msg)
-	return m, cmd
+	cmds = append(cmds, cmd)
+
+	return m, tea.Batch(cmds...)
 }
 
 // all listened logs
 type logMsg struct {
-	JSON string
+	JSON   string
+	Source string
 }
 
 // only pet updates

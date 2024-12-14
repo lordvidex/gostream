@@ -45,7 +45,6 @@ func (c *WatcherRegistrar) RegisterWatcher(w *entity.Watcher) error {
 	}
 
 	c.count.Add(1)
-	// TODO: send snapshot first
 
 	return nil
 }
@@ -83,21 +82,12 @@ func (c *WatcherRegistrar) Count() int64 {
 // PublishToClients propagates updates to registered watchers
 func (c *WatcherRegistrar) PublishToClients(ctx context.Context, data *gostreamv1.WatchResponse) error {
 
-	var channels []gostreamv1.Entity
+	channels := make([]gostreamv1.Entity, 0, 2)
 
-	switch data.GetKind() {
-	case gostreamv1.EventKind_EVENT_KIND_UPDATE, gostreamv1.EventKind_EVENT_KIND_DELETE:
-		update := data.GetUpdate()
-		if update == nil {
-			return errors.New("kind is update, but update is nil")
-		}
-		e := update.GetEntity()
-		channels = []gostreamv1.Entity{e, gostreamv1.Entity_ENTITY_UNSPECIFIED}
+	if e := data.GetEntity(); e != gostreamv1.Entity_ENTITY_UNSPECIFIED {
+		channels = append(channels, e)
 	}
-
-	if len(channels) == 0 {
-		return nil
-	}
+	channels = append(channels, gostreamv1.Entity_ENTITY_UNSPECIFIED)
 
 	c.mu.RLock()
 	defer c.mu.RUnlock()
