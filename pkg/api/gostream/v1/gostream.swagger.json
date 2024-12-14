@@ -371,9 +371,6 @@
     "WatchResponseWatchData": {
       "type": "object",
       "properties": {
-        "entity": {
-          "$ref": "#/definitions/v1Entity"
-        },
         "pet": {
           "$ref": "#/definitions/v1Pet"
         },
@@ -594,6 +591,9 @@
       "properties": {
         "kind": {
           "$ref": "#/definitions/v1EventKind"
+        },
+        "entity": {
+          "$ref": "#/definitions/v1Entity"
         },
         "snapshot": {
           "$ref": "#/definitions/WatchResponseWatchSnapshot"

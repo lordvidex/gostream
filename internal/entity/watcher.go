@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+
 	gostreamv1 "github.com/lordvidex/gostream/pkg/api/gostream/v1"
 )
 
@@ -74,6 +75,7 @@ func (w *Watcher) Entities() []gostreamv1.Entity {
 }
 
 func collapse(entities []gostreamv1.Entity) []gostreamv1.Entity {
+	entities = slices.Compact(entities)
 	if slices.Contains(entities, gostreamv1.Entity_ENTITY_UNSPECIFIED) {
 		return []gostreamv1.Entity{gostreamv1.Entity_ENTITY_UNSPECIFIED}
 	}

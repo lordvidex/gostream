@@ -24,6 +24,7 @@ import (
 )
 
 type App struct {
+	*Client
 	ctx context.Context
 	cfg config.Client
 	p   *tea.Program
@@ -34,6 +35,7 @@ type App struct {
 func New(ctx context.Context, cfg config.Client) *App {
 	ap := App{
 		ctx:    ctx,
+		Client: &Client{ctx: ctx},
 		cfg:    cfg,
 		closer: closer.New(),
 	}
@@ -52,14 +54,14 @@ func (a *App) Run() error {
 		defer f.Close()
 	}
 
-	a.p = tea.NewProgram(newHome())
+	a.p = tea.NewProgram(newHome(a.Client))
 
-	cl, err := a.connectBestServer()
+	watchCl, err := a.connectBestServer()
 	if err != nil {
 		return err
 	}
 
-	go a.stream(cl)
+	go a.stream(watchCl)
 
 	if _, err = a.p.Run(); err != nil {
 		return err
@@ -95,29 +97,22 @@ func (a *App) stream(cl gostreamv1.WatchersServiceClient) {
 				log.Println("error marshalling message:", err)
 			}
 
-			msgs := []tea.Msg{logMsg{JSON: string(b)}}
+			msgs := []tea.Msg{logMsg{Source: "server", JSON: string(b)}}
 
-			switch v.Kind {
-			case gostreamv1.EventKind_EVENT_KIND_DELETE:
-				upd := v.GetUpdate()
-				if upd.GetEntity() == gostreamv1.Entity_ENTITY_PET {
+			if v.GetEntity() == gostreamv1.Entity_ENTITY_PET {
+				switch v.Kind {
+				case gostreamv1.EventKind_EVENT_KIND_DELETE:
+					upd := v.GetUpdate()
 					msgs = append(msgs, deleteMsg{ID: upd.GetPet().Id})
-				}
-			case gostreamv1.EventKind_EVENT_KIND_SNAPSHOT:
-				upd := v.GetSnapshot()
-				snap := upd.GetSnapshot()
-				// TODO: bad-api: we can't determine if this is PET snapshot without looping
-				res := make([]entity.Pet, 0, len(snap))
-				for _, pet := range snap {
-					if pet.GetEntity() != gostreamv1.Entity_ENTITY_PET {
-						break
+				case gostreamv1.EventKind_EVENT_KIND_SNAPSHOT:
+					snap := v.GetSnapshot().GetSnapshot()
+					res := make([]entity.Pet, 0, len(snap))
+					for _, pet := range snap {
+						res = append(res, entity.Pet{Pet: pet.GetPet()})
 					}
-					res = append(res, entity.Pet{Pet: pet.GetPet()})
-				}
-				msgs = append(msgs, snapshotMsg{Pets: res})
-			case gostreamv1.EventKind_EVENT_KIND_UPDATE:
-				upd := v.GetUpdate()
-				if upd.GetEntity() == gostreamv1.Entity_ENTITY_PET {
+					msgs = append(msgs, snapshotMsg{Pets: res})
+				case gostreamv1.EventKind_EVENT_KIND_UPDATE:
+					upd := v.GetUpdate()
 					msgs = append(msgs, updateMsg{Pet: entity.Pet{Pet: upd.GetPet()}})
 				}
 			}
@@ -147,7 +142,8 @@ func (a *App) connectBestServer() (gostreamv1.WatchersServiceClient, error) {
 	}
 
 	sort.Slice(servers, func(i, j int) bool { return servers[i].load < servers[j].load })
-	return servers[0].client, nil
+	a.petCl = servers[0].petCl
+	return servers[0].watchCl, nil
 }
 
 func (a *App) connectServer(addr string) (*server, error) {
@@ -169,13 +165,14 @@ func (a *App) connectServer(addr string) (*server, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &server{client: cl, load: getScore(res), addr: addr}, nil
+	return &server{watchCl: cl, petCl: gostreamv1.NewPetServiceClient(conn), load: getScore(res), addr: addr}, nil
 }
 
 type server struct {
-	client gostreamv1.WatchersServiceClient
-	addr   string
-	load   float64
+	watchCl gostreamv1.WatchersServiceClient
+	petCl   gostreamv1.PetServiceClient
+	addr    string
+	load    float64
 }
 
 func getScore(res *gostreamv1.AdvertiseResponse) float64 {

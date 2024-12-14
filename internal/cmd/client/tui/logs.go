@@ -2,7 +2,6 @@ package tui
 
 import (
 	"bytes"
-	"encoding/json"
 
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/viewport"
@@ -40,15 +39,20 @@ func (m *logsModel) View() string {
 	// return m.li.View()
 }
 
-func (m *logsModel) AddItem(entry string) {
-	json.Indent(&m.s, []byte(entry), "", "	")
-	m.s.WriteString("\n")
+func (m *logsModel) AddItem(source, entry string) {
+	m.s.WriteString(source + ": " + entry)
+	// json.Indent(&m.s, []byte(entry), "", "	")
+	m.s.WriteString("\n\n")
 	m.v.SetContent(m.s.String())
 	// m.li.InsertItem(len(m.li.Items()), &serverLog{entry})
 }
 
 func (m *logsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
+	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		m.SetSize(msg.Width, msg.Height)
+	}
 	m.v, cmd = m.v.Update(msg)
 	return m, cmd
 }

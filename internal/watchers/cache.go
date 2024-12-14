@@ -24,10 +24,10 @@ func (c *Cache) UpdatePets(kind gostreamv1.EventKind, data []entity.Pet) {
 	case gostreamv1.EventKind_EVENT_KIND_UPDATE, gostreamv1.EventKind_EVENT_KIND_DELETE:
 		for _, pet := range data {
 			d := &gostreamv1.WatchResponse{
-				Kind: kind,
+				Kind:   kind,
+				Entity: gostreamv1.Entity_ENTITY_PET,
 				Data: &gostreamv1.WatchResponse_Update{
 					Update: &gostreamv1.WatchResponse_WatchData{
-						Entity: gostreamv1.Entity_ENTITY_PET,
 						Data: &gostreamv1.WatchResponse_WatchData_Pet{
 							Pet: pet.Pet,
 						},
@@ -41,7 +41,8 @@ func (c *Cache) UpdatePets(kind gostreamv1.EventKind, data []entity.Pet) {
 		}
 	case gostreamv1.EventKind_EVENT_KIND_SNAPSHOT:
 		d := &gostreamv1.WatchResponse{
-			Kind: kind,
+			Kind:   kind,
+			Entity: gostreamv1.Entity_ENTITY_PET,
 			Data: &gostreamv1.WatchResponse_Snapshot{
 				Snapshot: &gostreamv1.WatchResponse_WatchSnapshot{
 					Snapshot: descPets(data),
@@ -62,7 +63,6 @@ func descPets(data []entity.Pet) []*gostreamv1.WatchResponse_WatchData {
 			Data: &gostreamv1.WatchResponse_WatchData_Pet{
 				Pet: v.Pet,
 			},
-			Entity: gostreamv1.Entity_ENTITY_PET,
 		}
 	}
 	return arr
@@ -73,10 +73,10 @@ func (c *Cache) UpdateUsers(kind gostreamv1.EventKind, data []entity.User) {
 	case gostreamv1.EventKind_EVENT_KIND_UPDATE, gostreamv1.EventKind_EVENT_KIND_DELETE:
 		for _, user := range data {
 			d := &gostreamv1.WatchResponse{
-				Kind: kind,
+				Kind:   kind,
+				Entity: gostreamv1.Entity_ENTITY_USER,
 				Data: &gostreamv1.WatchResponse_Update{
 					Update: &gostreamv1.WatchResponse_WatchData{
-						Entity: gostreamv1.Entity_ENTITY_USER,
 						Data: &gostreamv1.WatchResponse_WatchData_User{
 							User: user.User,
 						},
@@ -90,7 +90,8 @@ func (c *Cache) UpdateUsers(kind gostreamv1.EventKind, data []entity.User) {
 		}
 	case gostreamv1.EventKind_EVENT_KIND_SNAPSHOT:
 		d := &gostreamv1.WatchResponse{
-			Kind: kind,
+			Kind:   kind,
+			Entity: gostreamv1.Entity_ENTITY_USER,
 			Data: &gostreamv1.WatchResponse_Snapshot{
 				Snapshot: &gostreamv1.WatchResponse_WatchSnapshot{
 					Snapshot: descUsers(data),
@@ -111,7 +112,6 @@ func descUsers(data []entity.User) []*gostreamv1.WatchResponse_WatchData {
 			Data: &gostreamv1.WatchResponse_WatchData_User{
 				User: v.User,
 			},
-			Entity: gostreamv1.Entity_ENTITY_USER,
 		}
 	}
 	return arr

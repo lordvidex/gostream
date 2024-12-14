@@ -9,7 +9,8 @@ import (
 
 func makePetSnapshot(v []entity.Pet) *gostreamv1.WatchResponse {
 	return &gostreamv1.WatchResponse{
-		Kind: gostreamv1.EventKind_EVENT_KIND_SNAPSHOT,
+		Kind:   gostreamv1.EventKind_EVENT_KIND_SNAPSHOT,
+		Entity: gostreamv1.Entity_ENTITY_PET,
 		Data: &gostreamv1.WatchResponse_Snapshot{
 			Snapshot: &gostreamv1.WatchResponse_WatchSnapshot{
 				Snapshot: descPets(v),
@@ -19,7 +20,8 @@ func makePetSnapshot(v []entity.Pet) *gostreamv1.WatchResponse {
 }
 func makeUserSnapshot(v []entity.User) *gostreamv1.WatchResponse {
 	return &gostreamv1.WatchResponse{
-		Kind: gostreamv1.EventKind_EVENT_KIND_SNAPSHOT,
+		Kind:   gostreamv1.EventKind_EVENT_KIND_SNAPSHOT,
+		Entity: gostreamv1.Entity_ENTITY_USER,
 		Data: &gostreamv1.WatchResponse_Snapshot{
 			Snapshot: &gostreamv1.WatchResponse_WatchSnapshot{
 				Snapshot: descUsers(v),
@@ -35,7 +37,6 @@ func descPets(data []entity.Pet) []*gostreamv1.WatchResponse_WatchData {
 			Data: &gostreamv1.WatchResponse_WatchData_Pet{
 				Pet: v.Pet,
 			},
-			Entity: gostreamv1.Entity_ENTITY_PET,
 		}
 	}
 	return arr
@@ -48,7 +49,6 @@ func descUsers(data []entity.User) []*gostreamv1.WatchResponse_WatchData {
 			Data: &gostreamv1.WatchResponse_WatchData_User{
 				User: v.User,
 			},
-			Entity: gostreamv1.Entity_ENTITY_USER,
 		}
 	}
 	return arr
@@ -56,10 +56,10 @@ func descUsers(data []entity.User) []*gostreamv1.WatchResponse_WatchData {
 
 func (i *Implementation) publishPetDelete(ctx context.Context, id uint64) error {
 	data := &gostreamv1.WatchResponse{
-		Kind: gostreamv1.EventKind_EVENT_KIND_DELETE,
+		Kind:   gostreamv1.EventKind_EVENT_KIND_DELETE,
+		Entity: gostreamv1.Entity_ENTITY_PET,
 		Data: &gostreamv1.WatchResponse_Update{
 			Update: &gostreamv1.WatchResponse_WatchData{
-				Entity: gostreamv1.Entity_ENTITY_PET,
 				Data: &gostreamv1.WatchResponse_WatchData_Pet{
 					Pet: &gostreamv1.Pet{
 						Id: id,
@@ -73,10 +73,10 @@ func (i *Implementation) publishPetDelete(ctx context.Context, id uint64) error 
 
 func (i *Implementation) publishUserDelete(ctx context.Context, id uint64) error {
 	data := &gostreamv1.WatchResponse{
-		Kind: gostreamv1.EventKind_EVENT_KIND_DELETE,
+		Kind:   gostreamv1.EventKind_EVENT_KIND_DELETE,
+		Entity: gostreamv1.Entity_ENTITY_USER,
 		Data: &gostreamv1.WatchResponse_Update{
 			Update: &gostreamv1.WatchResponse_WatchData{
-				Entity: gostreamv1.Entity_ENTITY_USER,
 				Data: &gostreamv1.WatchResponse_WatchData_User{
 					User: &gostreamv1.User{
 						Id: id,
@@ -90,10 +90,10 @@ func (i *Implementation) publishUserDelete(ctx context.Context, id uint64) error
 
 func (i *Implementation) publishPetUpdate(ctx context.Context, p *gostreamv1.Pet) error {
 	data := &gostreamv1.WatchResponse{
-		Kind: gostreamv1.EventKind_EVENT_KIND_UPDATE,
+		Kind:   gostreamv1.EventKind_EVENT_KIND_UPDATE,
+		Entity: gostreamv1.Entity_ENTITY_PET,
 		Data: &gostreamv1.WatchResponse_Update{
 			Update: &gostreamv1.WatchResponse_WatchData{
-				Entity: gostreamv1.Entity_ENTITY_PET,
 				Data: &gostreamv1.WatchResponse_WatchData_Pet{
 					Pet: p,
 				},
@@ -105,10 +105,10 @@ func (i *Implementation) publishPetUpdate(ctx context.Context, p *gostreamv1.Pet
 
 func (i *Implementation) publishUserUpdate(ctx context.Context, p *gostreamv1.User) error {
 	data := &gostreamv1.WatchResponse{
-		Kind: gostreamv1.EventKind_EVENT_KIND_UPDATE,
+		Kind:   gostreamv1.EventKind_EVENT_KIND_UPDATE,
+		Entity: gostreamv1.Entity_ENTITY_USER,
 		Data: &gostreamv1.WatchResponse_Update{
 			Update: &gostreamv1.WatchResponse_WatchData{
-				Entity: gostreamv1.Entity_ENTITY_USER,
 				Data: &gostreamv1.WatchResponse_WatchData_User{
 					User: p,
 				},
