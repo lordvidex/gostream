@@ -10,7 +10,7 @@ import (
 // 1. Fast lookups
 // 2. Fast inserts
 // 3. Fast delete
-// 4. Snapshot requires sorting
+// 4. Snapshot is O(n)
 type Map[K comparable, V Value[K]] struct {
 	data map[K]*list.Element
 	l    list.List
