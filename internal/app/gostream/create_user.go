@@ -22,7 +22,7 @@ func (i *Implementation) CreateUser(ctx context.Context, req *gostreamv1.CreateU
 	}
 
 	user.Id = id
-	i.userCache.Store(id, entity.User{User: user})
+	i.userCache.Store(entity.User{User: user})
 	if err = i.publishUserUpdate(ctx, user); err != nil {
 		fmt.Println("got error publishing data", err)
 	}

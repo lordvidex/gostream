@@ -19,7 +19,7 @@ func (i *Implementation) UpdatePet(ctx context.Context, req *gostreamv1.UpdatePe
 		return nil, status.Err(err)
 	}
 
-	i.petCache.Store(req.PetId, entity.Pet{Pet: req.NewData})
+	i.petCache.Store(entity.Pet{Pet: req.NewData})
 	if err = i.publishPetUpdate(ctx, req.NewData); err != nil {
 		fmt.Println("got error publishing data", err)
 	}

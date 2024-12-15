@@ -11,6 +11,15 @@ import (
 
 // ListUsers ...
 func (i *Implementation) ListUsers(ctx context.Context, req *gostreamv1.ListUsersRequest) (*gostreamv1.ListUsersResponse, error) {
+	if req.Cached {
+		users := i.userCache.Snapshot()
+		res := make([]*gostreamv1.User, 0, len(users))
+		for _, user := range users {
+			res = append(res, user.User)
+		}
+		return &gostreamv1.ListUsersResponse{Users: res}, nil
+	}
+
 	users, err := i.userRepo.ListUsers(ctx)
 	if err != nil {
 		fmt.Println("error listing users", err)

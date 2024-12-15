@@ -8,8 +8,10 @@ import (
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v5"
 	"github.com/lordvidex/errs/v2"
+
 	"github.com/lordvidex/gostream/internal/db/inmemory"
 	"github.com/lordvidex/gostream/internal/entity"
+	"github.com/lordvidex/gostream/pkg/md5hash"
 
 	gostreamv1 "github.com/lordvidex/gostream/pkg/api/gostream/v1"
 )
@@ -26,13 +28,13 @@ func NewUserDataSource(repo *Repository) *UserDataSource {
 }
 
 func (s *UserDataSource) Hash(ctx context.Context) (string, error) {
-	query, params, err := sq.Select("md5_chain(id || name || age || nationality)").
-		From("stream_users").ToSql()
+	q, err := md5hash.Query(entity.User{})
 	if err != nil {
 		return "", err
 	}
+
 	var result string
-	if err = s.pool.QueryRow(ctx, query, params...).Scan(&result); err != nil {
+	if err = s.pool.QueryRow(ctx, q).Scan(&result); err != nil {
 		return "", err
 	}
 	return result, nil

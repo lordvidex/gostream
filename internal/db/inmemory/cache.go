@@ -2,15 +2,16 @@ package inmemory
 
 import (
 	"context"
-	"crypto/md5"
 	"fmt"
-	"io"
 	"iter"
 	"sync"
 	"sync/atomic"
 	"time"
 
 	"github.com/lordvidex/errs/v2"
+
+	"github.com/lordvidex/gostream/pkg/md5hash"
+
 	gostreamv1 "github.com/lordvidex/gostream/pkg/api/gostream/v1"
 )
 
@@ -29,7 +30,7 @@ const (
 
 // Container stores local data
 type Container[K comparable, V any] interface {
-	Add(K, V)
+	Add(V)
 	AddAll([]V)
 	Remove(K)
 	Get(K) (V, bool)
@@ -42,11 +43,6 @@ type Container[K comparable, V any] interface {
 type Value[K comparable] interface {
 	// Key represents the identifier for this value.
 	Key() K
-	// Hash returns a string value that should be always UNIQUE if any field of
-	// Value changed.
-	Hash() string
-	// UniqueString is used for Hash
-	UniqueString() string
 }
 
 // DataSource represents the cold storage.
@@ -63,12 +59,12 @@ type DataSource[K comparable, V Value[K]] interface {
 // Cache ...
 type Cache[K comparable, V Value[K]] struct {
 	container  Container[K, V]
-	dataHash   string
-	dirty      atomic.Bool
 	dataSource DataSource[K, V]
 	update     func(gostreamv1.EventKind, []V)
-	mode       UpdateMode
+	dataHash   string
 	mu         sync.RWMutex
+	dirty      atomic.Bool
+	mode       UpdateMode
 }
 
 type CacheOpts[K comparable, V Value[K]] func(*Cache[K, V])
@@ -110,10 +106,21 @@ func NewCache[K comparable, V Value[K]](
 	}
 
 	if ch.dataSource != nil {
+		if err := ch.validate(); err != nil {
+			return nil, err
+		}
 		go ch.startDataValidation(ctx)
 	}
 
 	return &ch, nil
+}
+
+func (c *Cache[K, V]) validate() error {
+	sample := new(V)
+	if _, err := md5hash.Value(sample); err != nil {
+		return fmt.Errorf("V must be hashable: %w", err)
+	}
+	return nil
 }
 
 // reset discards all data in cache and reloads them from
@@ -196,21 +203,19 @@ func (c *Cache[K, V]) compareWithDataSource(ctx context.Context) error {
 }
 
 func (c *Cache[K, V]) computeHash() {
-	prev := ""
-	for v := range c.container.Iter() {
-		h := md5.New()
-		_, _ = io.WriteString(h, prev)
-		_, _ = io.WriteString(h, v.UniqueString())
-		prev = fmt.Sprintf("%x", h.Sum(nil))
+	v, err := md5hash.ChainHashValueIter(c.container.Iter())
+	if err != nil {
+		fmt.Println("error chaining hash value iter", err)
+		return
 	}
 	c.mu.Lock()
-	c.dataHash = prev
+	c.dataHash = v
 	c.mu.Unlock()
 }
 
 // Store ...
-func (c *Cache[K, V]) Store(key K, value V) {
-	c.container.Add(key, value)
+func (c *Cache[K, V]) Store(value V) {
+	c.container.Add(value)
 	c.dirty.Store(true)
 }
 
@@ -233,10 +238,11 @@ func (c *Cache[K, V]) Snapshot() []V {
 func computeDifferences[K comparable, V Value[K]](initial, newData []V) (updates, deletes []V) {
 	exist := make(map[K]string)
 	for _, v := range initial {
-		exist[v.Key()] = v.Hash()
+		h, _ := md5hash.HashValue(v)
+		exist[v.Key()] = h
 	}
 	for _, v := range newData {
-		newHash := v.Hash()
+		newHash, _ := md5hash.HashValue(v)
 		if oldHash, ok := exist[v.Key()]; ok {
 			delete(exist, v.Key())
 			if newHash == oldHash {
