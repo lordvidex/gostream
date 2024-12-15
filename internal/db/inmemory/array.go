@@ -6,9 +6,9 @@ import (
 )
 
 // Array is a Container, that's safe for concurrent access and has
-// 1. Fast lookups
-// 2. Fast inserts
-// 3. Slow delete
+// 1. Fast lookups O(1)
+// 2. Fast inserts O(1)
+// 3. Slow delete O(n)
 type Array[K comparable, V Value[K]] struct {
 	pos  map[K]int
 	data []V
@@ -22,13 +22,14 @@ func NewArray[K comparable, V Value[K]]() *Array[K, V] {
 	}
 }
 
-func (a *Array[K, V]) Add(k K, v V) {
+func (a *Array[K, V]) Add(v V) {
 	a.mu.Lock()
-	a.add(k, v)
+	a.add(v)
 	a.mu.Unlock()
 }
 
-func (a *Array[K, V]) add(k K, v V) {
+func (a *Array[K, V]) add(v V) {
+	k := v.Key()
 	if idx, ok := a.pos[k]; ok {
 		a.data[idx] = v
 	} else {
@@ -40,16 +41,20 @@ func (a *Array[K, V]) add(k K, v V) {
 func (a *Array[K, V]) AddAll(vs []V) {
 	a.mu.Lock()
 	for _, v := range vs {
-		a.add(v.Key(), v)
+		a.add(v)
 	}
 	a.mu.Unlock()
 }
 
+// Remove has a time complexity of O(n)
 func (a *Array[K, V]) Remove(k K) {
 	a.mu.Lock()
 	if idx, ok := a.pos[k]; ok {
 		delete(a.pos, k)
 		a.data = append(a.data[:idx], a.data[idx+1:]...)
+		for i := idx; i < len(a.data); i++ {
+			a.pos[a.data[i].Key()] = i
+		}
 	}
 	a.mu.Unlock()
 }

@@ -81,6 +81,15 @@
             }
           }
         },
+        "parameters": [
+          {
+            "name": "cached",
+            "description": "TODO: add filters",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
         "tags": [
           "PetService"
         ]
@@ -206,6 +215,14 @@
             }
           }
         },
+        "parameters": [
+          {
+            "name": "cached",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
         "tags": [
           "UserService"
         ]

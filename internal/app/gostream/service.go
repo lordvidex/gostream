@@ -26,13 +26,13 @@ type Repository interface {
 }
 
 type UserCache interface {
-	Store(uint64, entity.User)
+	Store(entity.User)
 	Delete(uint64)
 	Snapshot() []entity.User
 }
 
 type PetCache interface {
-	Store(uint64, entity.Pet)
+	Store(entity.Pet)
 	Delete(uint64)
 	Snapshot() []entity.Pet
 }

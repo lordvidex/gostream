@@ -9,6 +9,8 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/lordvidex/errs/v2"
 
+	"github.com/lordvidex/gostream/pkg/md5hash"
+
 	"github.com/lordvidex/gostream/internal/db/inmemory"
 	"github.com/lordvidex/gostream/internal/entity"
 	gostreamv1 "github.com/lordvidex/gostream/pkg/api/gostream/v1"
@@ -27,13 +29,12 @@ func NewPetDataSource(repo *Repository) *PetDataSource {
 }
 
 func (p *PetDataSource) Hash(ctx context.Context) (string, error) {
-	query, params, err := sq.Select("md5_chain(id || kind || name || age)").
-		From("pets").ToSql()
+	q, err := md5hash.Query(entity.Pet{})
 	if err != nil {
 		return "", err
 	}
 	var result string
-	if err = p.pool.QueryRow(ctx, query, params...).Scan(&result); err != nil {
+	if err = p.pool.QueryRow(ctx, q).Scan(&result); err != nil {
 		return "", err
 	}
 	return result, nil

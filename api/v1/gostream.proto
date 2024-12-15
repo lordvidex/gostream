@@ -83,7 +83,7 @@ message UpdatePetResponse {}
 
 message ListPetsRequest {
   // TODO: add filters
-  // TODO: add cache option
+  bool cached = 1;
 }
 
 message ListPetsResponse {
@@ -112,7 +112,9 @@ message UpdateUserRequest {
 
 message UpdateUserResponse {}
 
-message ListUsersRequest {}
+message ListUsersRequest {
+  bool cached = 1;
+}
 message ListUsersResponse {
   repeated User users = 1;
 }

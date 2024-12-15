@@ -19,7 +19,7 @@ func (i *Implementation) UpdateUser(ctx context.Context, req *gostreamv1.UpdateU
 		return nil, status.Err(err)
 	}
 
-	i.userCache.Store(req.UserId, entity.User{User: req.NewData})
+	i.userCache.Store(entity.User{User: req.NewData})
 	if err = i.publishUserUpdate(ctx, req.NewData); err != nil {
 		fmt.Println("got error publishing data", err)
 	}

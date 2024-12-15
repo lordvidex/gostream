@@ -22,7 +22,7 @@ func (i *Implementation) CreatePet(ctx context.Context, req *gostreamv1.CreatePe
 	}
 
 	pet.Id = id
-	i.petCache.Store(id, entity.Pet{Pet: pet})
+	i.petCache.Store(entity.Pet{Pet: pet})
 	if err = i.publishPetUpdate(ctx, pet); err != nil {
 		fmt.Println("got error publishing data", err)
 	}
