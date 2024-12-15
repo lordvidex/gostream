@@ -1,3 +1,4 @@
 ignore:
-  - pkg/api/**
-  - **/cmd
+  - "pkg/api/**"
+  - "**/cmd/**"
+  - "cmd"
