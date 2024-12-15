@@ -1,4 +1,4 @@
-# gostream
+# gostream [![codecov](https://codecov.io/gh/lordvidex/gostream/branch/main/graph/badge.svg?token=WMIK42XOTT)](https://codecov.io/gh/lordvidex/gostream)
 
 ## Working Principle
 <p align="center">
